@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Nxi\Factro\Tests\Support\OpenApiDiff;
+
+require $_composer_autoload_path ?? __DIR__.'/../vendor/autoload.php';
+
+[, $oldFile, $newFile] = $argv + [null, null, null];
+if (!is_string($oldFile) || !is_string($newFile)) {
+    fwrite(STDERR, "usage: openapi-diff <old.json> <new.json>\n");
+    exit(2);
+}
+$read = static function (string $file): array {
+    $decoded = json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+    if (!is_array($decoded)) {
+        throw new UnexpectedValueException(sprintf('%s is not a JSON object.', $file));
+    }
+
+    return $decoded;
+};
+echo OpenApiDiff::render(OpenApiDiff::compare($read($oldFile), $read($newFile)));

@@ -1,0 +1,40 @@
+name: Bug report
+description: Something in the SDK does not work as expected
+labels: [bug]
+body:
+  - type: input
+    id: sdk-version
+    attributes:
+      label: SDK version
+      description: Output of `composer show nxi/factro-sdk | grep versions`
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+    validations:
+      required: true
+  - type: input
+    id: symfony-version
+    attributes:
+      label: Symfony version
+      description: Version of `symfony/http-client`
+    validations:
+      required: false
+  - type: textarea
+    id: code
+    attributes:
+      label: Minimal code
+      description: The smallest piece of code that shows the problem.
+      render: php
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Error output
+      description: Exception message, stack trace or the unexpected result. Remove your API token and any personal data from factro first.
+      render: text
+    validations:
+      required: true

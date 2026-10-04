@@ -1,0 +1,53 @@
+[
+    {
+        "id": "3a1f0c7e-5b2d-5e8a-9c4f-1d2e3f4a5b6c",
+        "title": "Title 40",
+        "creatorId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+        "officerId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "isArchived": false,
+        "createdAt": "2026-04-01T08:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b",
+        "listElements": [
+            {
+                "id": "7c2d9e1a-4f3b-5a6c-8d7e-2f1a3b4c5d6e",
+                "createdAt": "2026-04-01T08:05:00.000Z",
+                "checked": false,
+                "elementReferenceType": "task",
+                "nextListElementId": "8d3e0f2b-5a4c-5b7d-9e8f-3a2b4c5d6e7f",
+                "referencedElement": {
+                    "id": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+                    "title": "Title 20",
+                    "taskState": "inProcess",
+                    "colorScheme": "red",
+                    "projectId": "d61385c7-c0ca-5faa-a628-09430d2b096a",
+                    "parentPackageId": "5c989530-7db7-5ff1-a3f9-cb9fc37fbfa6"
+                }
+            },
+            {
+                "id": "8d3e0f2b-5a4c-5b7d-9e8f-3a2b4c5d6e7f",
+                "createdAt": "2026-04-01T08:10:00.000Z",
+                "checked": true,
+                "elementReferenceType": "note",
+                "nextListElementId": null,
+                "referencedElement": {
+                    "id": "9e4f1a3c-6b5d-5c8e-af9a-4b3c5d6e7f8a",
+                    "title": "Title 41",
+                    "taskState": null,
+                    "colorScheme": "blue",
+                    "projectId": null,
+                    "parentPackageId": null
+                }
+            }
+        ]
+    },
+    {
+        "id": "4b2a1d8f-6c3e-5f9b-ad5a-2e3f4a5b6c7d",
+        "title": "Title 42",
+        "creatorId": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+        "officerId": null,
+        "isArchived": true,
+        "createdAt": "2026-02-15T12:30:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b",
+        "listElements": []
+    }
+]

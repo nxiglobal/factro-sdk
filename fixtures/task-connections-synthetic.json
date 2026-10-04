@@ -1,0 +1,10 @@
+[
+    {
+        "id": "c1",
+        "taskId": "t1",
+        "referenceId": "t2",
+        "isPredecessor": true,
+        "isSuccessor": false,
+        "changeDate": "2026-09-01T10:00:00.000Z"
+    }
+]

@@ -1,0 +1,10 @@
+/vendor/
+/.phpunit.cache/
+/.php-cs-fixer.cache
+/fixtures/.recording/
+/.env.local
+/composer.lock
+/.idea/
+/docs/openapi/*
+!/docs/openapi/README.md
+/docs/plans/

@@ -1,0 +1,67 @@
+[
+    {
+        "id": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+        "firstName": "FirstName1",
+        "lastName": "LastName1",
+        "emailAddress": "user1@example.invalid",
+        "securityGroup": "AllRights",
+        "isActive": true,
+        "anonymized": false,
+        "employeeNumber": 101,
+        "accountId": "aa04a81d-81a4-5c34-9bd4-83c780b2a3fa",
+        "salutation": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "firstName": "FirstName2",
+        "lastName": "LastName2",
+        "emailAddress": "user2@example.invalid",
+        "securityGroup": "AdvancedRights",
+        "isActive": true,
+        "anonymized": false,
+        "employeeNumber": 102,
+        "accountId": "d6ae8b7b-c50d-5c26-b106-fc83a045bcdf",
+        "salutation": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+        "firstName": "FirstName3",
+        "lastName": "LastName3",
+        "emailAddress": "user3@example.invalid",
+        "securityGroup": "BasicRights",
+        "isActive": true,
+        "anonymized": false,
+        "employeeNumber": 103,
+        "accountId": "4927dc70-e399-5a27-ae5c-14216bf75fdf",
+        "salutation": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "51e3acd4-2e8f-57a7-9ad3-c6454267a600",
+        "firstName": "FirstName4",
+        "lastName": "LastName4",
+        "emailAddress": "user4@example.invalid",
+        "securityGroup": "GuestRights",
+        "isActive": true,
+        "anonymized": false,
+        "employeeNumber": null,
+        "accountId": null,
+        "salutation": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "93ec96f4-95f7-58b2-9ff4-412f130effa6",
+        "firstName": "FirstName5",
+        "lastName": "LastName5",
+        "emailAddress": "user5@example.invalid",
+        "securityGroup": "BasicRights",
+        "isActive": false,
+        "anonymized": false,
+        "employeeNumber": null,
+        "accountId": "a2bd9cac-df43-588b-9828-0bc96a40c610",
+        "salutation": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

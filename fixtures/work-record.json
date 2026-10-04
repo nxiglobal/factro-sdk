@@ -1,0 +1,33 @@
+{
+    "id": "68ab18ad-5c83-5634-9cc1-72a64e5e9b46",
+    "title": "Title 51",
+    "description": "Text 51",
+    "workEmployeeId": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+    "creatorEmployeeId": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+    "startDate": "2026-09-01",
+    "startTime": "09:00",
+    "endDate": "2026-09-01",
+    "endTime": "10:30",
+    "utcOffset": 120,
+    "minutesWorked": 90,
+    "isBillable": true,
+    "isBilled": false,
+    "internalBookingDetails": "Text 61",
+    "externalBookingDetails": null,
+    "bookedOnReferenceId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+    "bookedOnReferenceType": "task",
+    "createdInContextOfReferenceId": null,
+    "createdInContextOfReferenceType": null,
+    "createdInContextOfReferenceTitle": null,
+    "travelledDistanceKm": null,
+    "location": {
+        "name": null,
+        "street": null,
+        "city": null,
+        "zipCode": null,
+        "country": null
+    },
+    "createdAt": 1756800000000,
+    "updatedAt": 1756886400000,
+    "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+}

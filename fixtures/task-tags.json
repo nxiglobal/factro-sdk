@@ -1,0 +1,20 @@
+[
+    {
+        "id": "6f1e3d5c-7b9a-5c2d-8e4f-0a1b2c3d4e5f",
+        "name": "Tag 10",
+        "changeDate": "2026-02-01T12:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "b3c5d7e9-1f2a-5b4c-9d6e-8f0a1b2c3d4e",
+        "name": "Tag 11",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "e7f9a1b3-5c6d-5e8f-8a0b-2c4d6e8f0a1b",
+        "name": "Tag 12",
+        "changeDate": "2026-05-20T09:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

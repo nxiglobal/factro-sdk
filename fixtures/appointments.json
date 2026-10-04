@@ -1,0 +1,42 @@
+[
+    {
+        "id": "0a03bdb0-4da0-5845-b55f-d9dd4a8d6daf",
+        "subject": "Title 30",
+        "description": "Text 50",
+        "location": "Hamburg",
+        "distance": 12.5,
+        "duration": 1.5,
+        "employeeId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+        "referencedTaskId": null,
+        "startDate": "2026-09-15T08:00:00.000Z",
+        "endDate": "2026-09-15T09:30:00.000Z",
+        "creatorId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+        "creationDate": "2026-09-01T10:00:00.000Z",
+        "changeDate": "2026-09-02T11:15:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "7860583f-25c3-5590-a6e3-a71a05c7f242",
+        "subject": "Title 20",
+        "description": null,
+        "location": null,
+        "distance": null,
+        "duration": 2,
+        "employeeId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "referencedTaskId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+        "startDate": "2026-09-16T12:00:00.000Z",
+        "endDate": "2026-09-16T14:00:00.000Z",
+        "creatorId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "creationDate": "2026-09-03T08:00:00.000Z",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "2d039ae3-848f-5a36-a04e-e7c2732afffd",
+        "subject": "Title 31",
+        "employeeId": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+        "startDate": "2026-09-17T06:00:00.000Z",
+        "endDate": "2026-09-17T06:30:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

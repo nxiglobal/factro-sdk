@@ -1,0 +1,22 @@
+[
+    {
+        "id": "a3e8eb42-6ada-519e-b57f-2f93743e7773",
+        "name": "Team 1",
+        "color": "#1e90ff",
+        "isActive": true,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "a35ecf0b-1e8b-5c68-9f61-17b2f2ea57b2",
+        "name": "Team 2",
+        "color": "#ff8c00",
+        "isActive": false,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "101d8564-d619-5e1f-81a5-61608a342600",
+        "name": "Team 3",
+        "isActive": true,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

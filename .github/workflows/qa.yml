@@ -1,0 +1,66 @@
+name: QA
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - uses: ramsey/composer-install@v3
+
+      - name: PHPStan
+        run: composer phpstan
+
+      - name: PHP-CS-Fixer
+        run: composer cs
+
+      - name: Rector
+        run: composer rector
+
+  tests:
+    # Job names are required status checks in the branch protection of main and develop
+    name: tests (PHP ${{ matrix.php }}, ${{ matrix.deps }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { php: '8.4', deps: highest }
+          - { php: '8.5', deps: highest }
+          # Static tools are version dependent, the lowest job only checks the runtime constraints
+          - { php: '8.4', deps: lowest }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.deps }}
+
+      - name: PHPUnit
+        run: composer test

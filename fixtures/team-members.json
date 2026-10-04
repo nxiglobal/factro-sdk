@@ -1,0 +1,14 @@
+[
+    {
+        "id": "be2ee7c5-5900-5604-b03a-e8a206aac39c",
+        "teamId": "a3e8eb42-6ada-519e-b57f-2f93743e7773",
+        "employeeId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "2e79bd54-d130-5636-82ab-68ae15ca81cd",
+        "teamId": "a3e8eb42-6ada-519e-b57f-2f93743e7773",
+        "employeeId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

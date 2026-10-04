@@ -1,0 +1,31 @@
+{
+    "id": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+    "title": "Title 20",
+    "description": "<p>Text 11</p>",
+    "projectId": "d61385c7-c0ca-5faa-a628-09430d2b096a",
+    "parentPackageId": "5c989530-7db7-5ff1-a3f9-cb9fc37fbfa6",
+    "taskState": "inProcess",
+    "taskPriority": null,
+    "urgency": "normal",
+    "isMilestone": false,
+    "startDate": "2026-08-30T22:00:00.000Z",
+    "endDate": "2026-08-31T22:00:00.000Z",
+    "pausedUntil": null,
+    "creationDate": "2026-01-10T07:30:00.000Z",
+    "changeDate": "2026-08-31T22:00:00.000Z",
+    "creatorId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+    "officerId": "354912c9-4579-5834-ba5f-f039bf82268c",
+    "executorId": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+    "companyId": "079b5e8a-77d6-5cf8-a2f8-7f3904c586f0",
+    "companyContactId": null,
+    "plannedEffort": 8,
+    "realizedEffort": 2.5,
+    "remainingEffort": 5.5,
+    "number": 3001,
+    "colorScheme": "red",
+    "customFields": {
+        "subproject_number": "x"
+    },
+    "targetParentId": null,
+    "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+}

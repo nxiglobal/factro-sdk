@@ -1,0 +1,13 @@
+/.editorconfig          export-ignore
+/.gitattributes         export-ignore
+/.github                export-ignore
+/.gitignore             export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/CLAUDE.md              export-ignore
+/Makefile               export-ignore
+/bin                    export-ignore
+/docs                   export-ignore
+/phpstan.dist.neon      export-ignore
+/phpunit.dist.xml       export-ignore
+/rector.php             export-ignore
+/tests                  export-ignore

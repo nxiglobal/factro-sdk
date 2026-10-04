@@ -1,0 +1,44 @@
+[
+    {
+        "id": "079b5e8a-77d6-5cf8-a2f8-7f3904c586f0",
+        "name": "Company 1",
+        "shortName": "Company 11",
+        "description": "Text 41",
+        "companyNumber": 501,
+        "customerId": null,
+        "emailAddress": "user21@example.invalid",
+        "phone": null,
+        "website": null,
+        "contactIds": [
+            "7cc95fa7-fd41-5842-b6b6-2dbeb81d19f3",
+            "a04c6b1d-6f4f-5368-b50d-0d9b44df5fb3"
+        ],
+        "street": null,
+        "zipCode": null,
+        "city": null
+    },
+    {
+        "id": "7596c034-f79c-5e23-8f62-c0c4e6a27063",
+        "name": "Company 2",
+        "shortName": "Company 12",
+        "description": null,
+        "companyNumber": 502,
+        "customerId": null,
+        "emailAddress": null,
+        "phone": null,
+        "website": null,
+        "contactIds": []
+    },
+    {
+        "id": "4d83529a-7e62-5eab-85fe-8d49805f8994",
+        "name": "Company 3",
+        "shortName": "Company 13",
+        "description": null,
+        "companyNumber": 503,
+        "customerId": null,
+        "emailAddress": null,
+        "phone": null,
+        "website": null,
+        "contactIds": []
+    }
+]

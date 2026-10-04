@@ -1,0 +1,20 @@
+[
+    {
+        "id": "5b1f0c2e-8d3a-5f4b-9c6d-1e2f3a4b5c6d",
+        "name": "Customer",
+        "changeDate": "2026-02-01T12:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "7c2e1d3f-9e4b-5a5c-8d7e-2f3a4b5c6d7e",
+        "name": "Supplier",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "9d3f2e4a-0f5c-5b6d-9e8f-3a4b5c6d7e8f",
+        "name": "Partner",
+        "changeDate": "2026-02-01T12:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

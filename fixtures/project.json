@@ -1,0 +1,28 @@
+{
+    "id": "d61385c7-c0ca-5faa-a628-09430d2b096a",
+    "title": "Title 1",
+    "description": "Text 1",
+    "projectState": "inProcess",
+    "priority": null,
+    "isArchived": false,
+    "isDraft": false,
+    "startDate": "2026-01-05T23:00:00.000Z",
+    "endDate": "2026-12-30T23:00:00.000Z",
+    "plannedStartDate": "2026-01-05T23:00:00.000Z",
+    "plannedEndDate": "2026-12-30T23:00:00.000Z",
+    "creationDate": "2025-11-03T08:15:22.118Z",
+    "changeDate": "2026-08-31T22:00:00.000Z",
+    "creatorId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+    "officerId": "354912c9-4579-5834-ba5f-f039bf82268c",
+    "companyId": "079b5e8a-77d6-5cf8-a2f8-7f3904c586f0",
+    "companyContactId": null,
+    "plannedEffort": 120,
+    "realizedEffort": 64.5,
+    "remainingEffort": 55.5,
+    "number": 1001,
+    "colorScheme": "blue",
+    "customFields": {
+        "subproject_number": "x"
+    },
+    "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+}

@@ -1,0 +1,22 @@
+[
+    {
+        "id": "c3e6a912-4d7f-5ac5-be80-3b6c9d2f5a8b",
+        "noteId": "d4f7ba23-5e80-5bd6-cf91-4c7dae305b9c",
+        "text": "<p>Text 80</p>",
+        "creatorId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "parentId": null,
+        "creationDate": "2026-05-20T13:30:00.000Z",
+        "changeDate": 1779285000000,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "e5a8cb34-6f91-5ce7-da02-5d8ebf416cad",
+        "noteId": "d4f7ba23-5e80-5bd6-cf91-4c7dae305b9c",
+        "text": "<p>Text 81</p>",
+        "creatorId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+        "parentId": "c3e6a912-4d7f-5ac5-be80-3b6c9d2f5a8b",
+        "creationDate": "2026-05-21T07:05:00.000Z",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

@@ -1,0 +1,18 @@
+{
+    "id": "079b5e8a-77d6-5cf8-a2f8-7f3904c586f0",
+    "name": "Company 1",
+    "shortName": "Company 11",
+    "description": "Text 41",
+    "companyNumber": 501,
+    "customerId": null,
+    "emailAddress": "user21@example.invalid",
+    "phone": null,
+    "website": null,
+    "contactIds": [
+        "7cc95fa7-fd41-5842-b6b6-2dbeb81d19f3",
+        "a04c6b1d-6f4f-5368-b50d-0d9b44df5fb3"
+    ],
+    "street": null,
+    "zipCode": null,
+    "city": null
+}

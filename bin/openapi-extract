@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Nxi\Factro\Tests\Support\OpenApiDiff;
+
+require $_composer_autoload_path ?? __DIR__.'/../vendor/autoload.php';
+
+// Reads swagger-ui-init.js from stdin and writes the OpenAPI document as compact JSON to stdout.
+echo json_encode(OpenApiDiff::extractSpec((string) stream_get_contents(\STDIN)), \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE), "\n";

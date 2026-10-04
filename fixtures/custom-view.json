@@ -1,0 +1,29 @@
+{
+    "id": "8f6e5b2d-0a7c-5d3f-a19e-6c7d8e9f0a1b",
+    "title": "Title 50",
+    "description": "<p>Text 50</p>",
+    "referenceId": "d61385c7-c0ca-5faa-a628-09430d2b096a",
+    "referenceType": "Project",
+    "viewType": "Kanban",
+    "columnOrder": [
+        ["title", true],
+        ["officerId", false]
+    ],
+    "filters": {
+        "taskState": ["planned", "inProcess"]
+    },
+    "sorting": [
+        {"id": "endDate", "desc": false},
+        {"id": "title", "desc": true}
+    ],
+    "grouping": ["taskState"],
+    "config": {
+        "showClosed": false
+    },
+    "isTemplate": false,
+    "sourceTemplateId": "9a7f6c3e-1b8d-5e4a-b2af-7d8e9f0a1b2c",
+    "position": 2,
+    "createdAt": 1772446500000,
+    "updatedAt": 1772449200000,
+    "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+}

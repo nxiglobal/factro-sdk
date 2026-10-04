@@ -1,0 +1,32 @@
+[
+    {
+        "id": "a2be6b3c-f7bb-559b-b759-b70f54ecd3d1",
+        "name": "Tag 1",
+        "changeDate": "2026-02-01T12:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "cd25c86a-09f5-5e97-b331-01ea0444d85c",
+        "name": "Tag 2",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "2c9d7032-8677-5aea-974a-d5b7e41c30b2",
+        "name": "Tag 3",
+        "changeDate": "2026-02-01T12:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "9001181c-c5e6-52c0-974a-e8d5e3706877",
+        "name": "Tag 4",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "c254c3dd-a83f-542e-a8b2-cb43d92a2b82",
+        "name": "Tag 5",
+        "changeDate": "2026-02-01T12:00:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

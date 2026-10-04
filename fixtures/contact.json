@@ -1,0 +1,14 @@
+{
+    "id": "7cc95fa7-fd41-5842-b6b6-2dbeb81d19f3",
+    "firstName": "FirstName11",
+    "lastName": "LastName11",
+    "salutation": "male",
+    "companyId": "079b5e8a-77d6-5cf8-a2f8-7f3904c586f0",
+    "description": "Text 51",
+    "emailAddress": "user31@example.invalid",
+    "phone": "+49 40 0000001",
+    "mobilePhone": "+49 170 0000001",
+    "street": "Rue du Marché 1",
+    "zipCode": "20095",
+    "city": "Hamburg"
+}

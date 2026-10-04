@@ -1,0 +1,55 @@
+{
+    "id": "d61385c7-c0ca-5faa-a628-09430d2b096a",
+    "type": "project",
+    "children": [
+        {
+            "id": "453190d4-b4cb-5516-a449-e682d35fdbdc",
+            "type": "package",
+            "children": [
+                {
+                    "id": "5c989530-7db7-5ff1-a3f9-cb9fc37fbfa6",
+                    "type": "package",
+                    "children": [
+                        {
+                            "id": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+                            "type": "task",
+                            "children": []
+                        },
+                        {
+                            "id": "989d8c68-0c26-5fd7-8347-ec82287d066d",
+                            "type": "task",
+                            "children": []
+                        },
+                        {
+                            "id": "57096cab-6e87-52b6-ad9f-359644eef132",
+                            "type": "task",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "id": "7c63ea10-f9ca-5e3e-9964-3e1cc6aa7276",
+                    "type": "package",
+                    "children": [
+                        {
+                            "id": "63232a03-3814-5949-b5d0-5878afabd93e",
+                            "type": "task",
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "213b517a-4b6f-54ab-a036-a6bbd99f6307",
+            "type": "package",
+            "children": [
+                {
+                    "id": "18f11dbd-d977-5fa4-b8c7-7858a4e3cf5b",
+                    "type": "task",
+                    "children": []
+                }
+            ]
+        }
+    ]
+}

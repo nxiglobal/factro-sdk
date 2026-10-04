@@ -1,0 +1,56 @@
+{
+    "name": "nxi/factro-sdk",
+    "description": "Unofficial PHP SDK for the factro Core API, built on Symfony components",
+    "keywords": ["factro", "factro-api", "sdk", "api-client", "project-management", "symfony", "http-client"],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/nxiglobal/factro-sdk",
+    "authors": [
+        {
+            "name": "NXI GmbH & Co. KG",
+            "email": "opensource@nxiglobal.com",
+            "homepage": "https://nxiglobal.com",
+            "role": "Maintainer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/nxiglobal/factro-sdk/issues",
+        "source": "https://github.com/nxiglobal/factro-sdk"
+    },
+    "require": {
+        "php": "^8.4",
+        "psr/log": "^3.0",
+        "symfony/clock": "^8.0",
+        "symfony/http-client": "^8.0",
+        "symfony/http-client-contracts": "^3.5",
+        "symfony/rate-limiter": "^8.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^13.2",
+        "rector/rector": "^2.5",
+        "symfony/cache": "^8.0"
+    },
+    "suggest": {
+        "symfony/cache": "CacheStorage for the rate limiter when several PHP processes share one token",
+        "symfony/lock": "LockFactory for the rate limiter when several hosts share one token"
+    },
+    "autoload": { "psr-4": { "Nxi\\Factro\\": "src/" } },
+    "autoload-dev": { "psr-4": { "Nxi\\Factro\\Tests\\": "tests/" } },
+    "config": { "sort-packages": true, "allow-plugins": { "php-http/discovery": false } },
+    "scripts": {
+        "phpstan": "phpstan analyse --memory-limit=-1 --no-progress",
+        "cs": "php-cs-fixer fix --diff --dry-run",
+        "cs:fix": "php-cs-fixer fix",
+        "rector": "rector process --dry-run",
+        "rector:fix": "rector process",
+        "test": "phpunit --testdox",
+        "test:unit": "phpunit --testdox --testsuite Unit",
+        "test:integration": "phpunit --testdox --testsuite Integration",
+        "qa": ["@phpstan", "@cs", "@rector", "@test"]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

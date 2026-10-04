@@ -1,0 +1,36 @@
+[
+    {
+        "id": "5c3b2e9a-7d4f-5a0c-be6b-3f4a5b6c7d8e",
+        "webhookId": "6d4c3f0b-8e5a-5b1d-af7c-4a5b6c7d8e9f",
+        "action": "TaskStateChanged",
+        "deliveryStatus": "delivered",
+        "deliveryAttempts": 1,
+        "createdAt": "2026-08-31T22:00:05.000Z",
+        "context": {
+            "taskId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+            "taskState": "inProcess"
+        },
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b",
+        "webhook": {
+            "id": "6d4c3f0b-8e5a-5b1d-af7c-4a5b6c7d8e9f",
+            "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b",
+            "employeeId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+            "callbackUri": "https://hooks.example.test/factro",
+            "authenticationHeaderName": "X-Factro-Secret",
+            "authenticationHeaderValue": "REDACTED",
+            "actionType": "TaskStateChanged",
+            "createdAt": "2026-01-10T07:30:00.000Z"
+        }
+    },
+    {
+        "id": "7e5d4a1c-9f6b-5c2e-b08d-5b6c7d8e9f0a",
+        "webhookId": null,
+        "action": "TaskCreated",
+        "deliveryStatus": null,
+        "deliveryAttempts": null,
+        "createdAt": "2026-09-01T06:15:00.000Z",
+        "context": {},
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b",
+        "webhook": null
+    }
+]

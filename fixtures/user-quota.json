@@ -1,0 +1,14 @@
+{
+    "maxPaidUserCount": 25,
+    "activePaidUserCount": 18,
+    "availablePaidUserSeats": 7,
+    "inactivePaidUserCount": 3,
+    "totalPaidUserCount": 21,
+    "activeGuestUserCount": 4,
+    "inactiveGuestUserCount": 1,
+    "totalGuestUserCount": 5,
+    "maxUserCount": 40,
+    "activeUserCount": 22,
+    "inactiveUserCount": 4,
+    "totalUserCount": 26
+}

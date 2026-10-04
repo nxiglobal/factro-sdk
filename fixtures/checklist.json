@@ -1,0 +1,32 @@
+[
+    {
+        "id": "3b7a1c9e-5d2f-5a8b-9c4d-1e6f7a8b9c0d",
+        "taskId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+        "title": "Title 40",
+        "checked": false,
+        "position": 1,
+        "endDate": "2026-09-14T22:00:00.000Z",
+        "assigneeId": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+        "changeDate": "2026-09-01T08:30:00.000Z"
+    },
+    {
+        "id": "8c2d4e6f-1a3b-5c5d-8e7f-2a4b6c8d0e1f",
+        "taskId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+        "title": "Title 41",
+        "checked": true,
+        "position": 2.5,
+        "endDate": null,
+        "assigneeId": null,
+        "changeDate": "2026-09-02T14:45:00.000Z"
+    },
+    {
+        "id": "d4e6f8a0-2b4c-5d6e-9f8a-3b5c7d9e1f2a",
+        "taskId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+        "title": "Title 42",
+        "checked": false,
+        "position": null,
+        "endDate": null,
+        "assigneeId": null,
+        "changeDate": null
+    }
+]

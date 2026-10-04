@@ -1,0 +1,24 @@
+[
+    {
+        "id": "0d1e2f3a-4b5c-5d6e-8f7a-9b0c1d2e3f4a",
+        "title": "Quote.pdf",
+        "contentType": "application/pdf",
+        "size": 184320,
+        "referenceId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+        "creatorId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+        "creationDate": "2026-08-12T09:15:00.000Z",
+        "changeDate": "2026-08-12T09:15:00.000Z",
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "1e2f3a4b-5c6d-5e7f-9a8b-0c1d2e3f4a5b",
+        "title": "Sketch.png",
+        "contentType": "image/png",
+        "size": 40960,
+        "referenceId": "5c989530-7db7-5ff1-a3f9-cb9fc37fbfa6",
+        "creatorId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "creationDate": "2026-08-20T14:02:00.000Z",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

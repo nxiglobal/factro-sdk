@@ -1,0 +1,22 @@
+{
+    "id": "453190d4-b4cb-5516-a449-e682d35fdbdc",
+    "title": "Title 4",
+    "description": null,
+    "projectId": "d61385c7-c0ca-5faa-a628-09430d2b096a",
+    "parentPackageId": null,
+    "startDate": null,
+    "endDate": null,
+    "creationDate": "2025-11-03T08:20:00.000Z",
+    "changeDate": "2026-05-12T09:01:39.444Z",
+    "creatorId": "464d0261-4ef7-5a89-8aaf-6b83f019eaeb",
+    "officerId": null,
+    "companyId": "079b5e8a-77d6-5cf8-a2f8-7f3904c586f0",
+    "companyContactId": null,
+    "plannedEffort": null,
+    "realizedEffort": null,
+    "remainingEffort": null,
+    "number": 2000,
+    "colorScheme": null,
+    "customFields": {},
+    "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+}

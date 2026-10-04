@@ -1,0 +1,22 @@
+[
+    {
+        "id": "a1c4e7f0-2b5d-58a3-9c6e-1f4a7b0d3e69",
+        "workRecordId": "68ab18ad-5c83-5634-9cc1-72a64e5e9b46",
+        "text": "<p>Text 70</p>",
+        "creatorId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "parentId": null,
+        "creationDate": "2026-09-02T08:15:00.000Z",
+        "changeDate": 1788335700000,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "b2d5f801-3c6e-59b4-ad7f-2a5b8c1e4f7a",
+        "workRecordId": "68ab18ad-5c83-5634-9cc1-72a64e5e9b46",
+        "text": "<p>Text 71</p>",
+        "creatorId": "f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5",
+        "parentId": "a1c4e7f0-2b5d-58a3-9c6e-1f4a7b0d3e69",
+        "creationDate": "2026-09-02T09:00:00.000Z",
+        "changeDate": null,
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    }
+]

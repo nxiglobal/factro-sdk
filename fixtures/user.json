@@ -1,0 +1,17 @@
+{
+    "id": "354912c9-4579-5834-ba5f-f039bf82268c",
+    "firstName": "FirstName2",
+    "lastName": "LastName2",
+    "emailAddress": "user2@example.invalid",
+    "securityGroup": "AdvancedRights",
+    "isActive": true,
+    "anonymized": false,
+    "employeeNumber": 102,
+    "accountId": "d6ae8b7b-c50d-5c26-b106-fc83a045bcdf",
+    "salutation": null,
+    "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b",
+    "street": null,
+    "zipCode": null,
+    "city": null,
+    "fallbackImageText": "VN"
+}
