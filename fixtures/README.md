@@ -49,7 +49,7 @@ request; never paste a real response.
 | `errors/404-path.html` | unknown path | Express error page |
 | `errors/403-task-closed.json` | write on a closed task | `{"message":"Task is closed"}` |
 | `errors/429.txt` | any, rate limit | `Rate limit exceeded` |
-| `access-rights.json` | `GET .../read_rights` | employee id => reasons |
+| `access-rights.json` | `GET .../read_rights` | 3 employees => `IAccessRightReason` lists: project, package (with team), task reasons |
 | `employee-access-right.json`, `team-access-right.json` | `PUT .../read_rights`, `PUT .../team_read_rights` | |
 | `documents.json`, `document.json`, `data-quota.json` | `GET /documents`, `GET /documents/{id}`, `GET /documents/quota` | |
 | `checklist.json`, `task-tags.json` | `GET /tasks/{id}/checklist`, `GET /tasks/tags` | |

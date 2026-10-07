@@ -8,16 +8,19 @@ use Nxi\Factro\Exception\HydrationException;
 use Nxi\Factro\FactroOptions;
 use Nxi\Factro\Http\Transport;
 use Nxi\Factro\Resource\AccessRight\AccessRights;
+use Nxi\Factro\Resource\AccessRight\Output\AccessRightReason;
 use Nxi\Factro\Resource\AccessRight\Output\EmployeeAccessRight;
 use Nxi\Factro\Resource\AccessRight\Output\TeamAccessRight;
 use Nxi\Factro\Testing\Fixtures;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
 #[CoversClass(AccessRights::class)]
+#[CoversClass(AccessRightReason::class)]
 #[CoversClass(EmployeeAccessRight::class)]
 #[CoversClass(TeamAccessRight::class)]
 final class AccessRightsTest extends TestCase
@@ -40,14 +43,46 @@ final class AccessRightsTest extends TestCase
         ]);
 
         $read = $rights->readRights();
-        self::assertSame(['officer', 'directWriteRights'], $read['354912c9-4579-5834-ba5f-f039bf82268c']);
         self::assertCount(3, $read);
+        self::assertEquals([
+            new AccessRightReason('IsProjectOfficer', projectId: 'd61385c7-c0ca-5faa-a628-09430d2b096a'),
+            new AccessRightReason('HasDirectProjectWriteRight', projectId: 'd61385c7-c0ca-5faa-a628-09430d2b096a'),
+        ], $read['354912c9-4579-5834-ba5f-f039bf82268c']);
+        self::assertEquals(
+            new AccessRightReason('HasDirectPackageTeamWriteRight', packageId: '453190d4-b4cb-5516-a449-e682d35fdbdc', teamId: 'c4d5e6f7-a8b9-5c0d-9e1f-3a4b5c6d7e8f'),
+            $read['f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5'][0],
+        );
+        self::assertEquals(
+            new AccessRightReason('IsTaskExecutor', taskId: 'e53f64f5-6dcc-5990-af50-e315dc575d1a'),
+            $read['464d0261-4ef7-5a89-8aaf-6b83f019eaeb'][0],
+        );
         self::assertSame([], $rights->writeRights());
     }
 
-    public function testReasonsThatAreNotStringsAreRejected(): void
+    public function testUnknownReasonsAndExtraKeysHydrateUnchanged(): void
     {
-        $rights = $this->rights(['GET /tasks/t1/read_rights' => new JsonMockResponse(['u1' => [1]])]);
+        $rights = $this->rights(['GET /tasks/t1/write_rights' => new JsonMockResponse([
+            'u1' => [['reason' => 'HasSomethingNew', 'roomId' => 'r1', 'listId' => 'l1']],
+        ])]);
+
+        self::assertEquals(['u1' => [new AccessRightReason('HasSomethingNew')]], $rights->writeRights());
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function malformedReasons(): iterable
+    {
+        yield 'list is not an array' => ['IsProjectOfficer'];
+        yield 'entry is a plain string' => [['IsProjectOfficer']];
+        yield 'entry without reason' => [[['projectId' => 'p1']]];
+        yield 'id is not a string' => [[['reason' => 'IsTaskExecutor', 'taskId' => 1]]];
+    }
+
+    #[DataProvider('malformedReasons')]
+    public function testMalformedReasonsAreRejected(mixed $reasons): void
+    {
+        $rights = $this->rights(['GET /tasks/t1/read_rights' => new JsonMockResponse(['u1' => $reasons])]);
 
         $this->expectException(HydrationException::class);
         $rights->readRights();

@@ -112,7 +112,10 @@ $client->packages()->shiftWithSuccessors($projectId, $packageId, daysDelta: 5);
 
 $rights = $client->projects()->accessRights($projectId);
 $rights->grantTeamWrite($teamId);
-$reasons = $rights->readRights();                                // employee id => list of reasons
+$reasons = $rights->readRights();                                // employee id => list<AccessRightReason>
+foreach ($reasons[$employeeId] ?? [] as $r) {
+    echo $r->reason, ' ', $r->packageId ?? $r->projectId ?? $r->taskId; // e.g. HasDirectPackageTeamWriteRight + packageId, teamId
+}
 ```
 
 ## Documents
