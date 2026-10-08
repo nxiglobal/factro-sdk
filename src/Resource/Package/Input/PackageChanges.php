@@ -8,12 +8,14 @@ use Nxi\Factro\Mapping\Payload;
 use Nxi\Factro\Time\CalendarDate;
 
 /**
- * Partial update for PUT /projects/{id}/packages/{pid}. Only non-null fields are sent.
+ * Partial update for PUT /projects/{id}/packages/{pid}. Only non-null fields are sent; fields named in $clear are
+ * sent as explicit null, which empties them in factro.
  */
 final readonly class PackageChanges
 {
     /**
      * @param array<string, mixed>|null $customFields
+     * @param list<string>              $clear        payload keys to send as null, e.g. ['colorScheme']
      */
     public function __construct(
         public ?string $title = null,
@@ -23,6 +25,7 @@ final readonly class PackageChanges
         public ?string $colorScheme = null,
         public ?string $officerId = null,
         public ?array $customFields = null,
+        public array $clear = [],
     ) {
     }
 
@@ -31,7 +34,7 @@ final readonly class PackageChanges
      */
     public function toPayload(\DateTimeZone $timezone): array
     {
-        return Payload::withoutNulls([
+        return Payload::withoutNullsExcept([
             'title' => $this->title,
             'description' => $this->description,
             'startDate' => $this->startDate?->toFactro($timezone),
@@ -39,7 +42,7 @@ final readonly class PackageChanges
             'colorScheme' => $this->colorScheme,
             'officerId' => $this->officerId,
             'customFields' => $this->customFields,
-        ]);
+        ], $this->clear);
     }
 
     public function isEmpty(): bool

@@ -43,4 +43,26 @@ final class TaskChangesTest extends TestCase
         self::assertSame(['urgency' => 'overdue'], new TaskChanges(urgency: Urgency::OVERDUE)->toPayload(new \DateTimeZone('UTC')));
         self::assertFalse(new TaskChanges(urgency: Urgency::NORMAL)->isEmpty());
     }
+
+    public function testClearedFieldsAreSentAsNull(): void
+    {
+        $changes = new TaskChanges(title: 'x', clear: ['colorScheme', 'executorId']);
+
+        self::assertSame(['title' => 'x', 'colorScheme' => null, 'executorId' => null], $changes->toPayload(new \DateTimeZone('UTC')));
+        self::assertFalse(new TaskChanges(clear: ['colorScheme'])->isEmpty());
+    }
+
+    public function testAnUnknownClearedFieldIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new TaskChanges(clear: ['colour'])->toPayload(new \DateTimeZone('UTC'));
+    }
+
+    public function testAFieldSetAndClearedAtOnceIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new TaskChanges(colorScheme: 'red', clear: ['colorScheme'])->toPayload(new \DateTimeZone('UTC'));
+    }
 }

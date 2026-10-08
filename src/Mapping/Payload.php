@@ -24,4 +24,29 @@ final class Payload
     {
         return array_filter($fields, static fn (mixed $value): bool => null !== $value);
     }
+
+    /**
+     * Like withoutNulls(), but sends every field named in $clear as an explicit null so that factro empties it.
+     *
+     * @param array<string, mixed> $fields
+     * @param list<string>         $clear
+     *
+     * @return array<string, mixed>
+     *
+     * @throws \InvalidArgumentException when a cleared field is unknown or also set
+     */
+    public static function withoutNullsExcept(array $fields, array $clear): array
+    {
+        foreach ($clear as $field) {
+            if (!\array_key_exists($field, $fields)) {
+                throw new \InvalidArgumentException(\sprintf('Cannot clear unknown field "%s".', $field));
+            }
+
+            if (null !== $fields[$field]) {
+                throw new \InvalidArgumentException(\sprintf('Field "%s" cannot be set and cleared at once.', $field));
+            }
+        }
+
+        return [...self::withoutNulls($fields), ...array_fill_keys($clear, null)];
+    }
 }

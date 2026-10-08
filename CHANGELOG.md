@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `TaskChanges` and `PackageChanges` take `clear`, a list of payload keys sent as explicit `null` to empty the field in factro (e.g. `['colorScheme']`). An unknown key or a key that is also set throws `\InvalidArgumentException`.
+
 - `AccessRights::readRights()` and `writeRights()` return `array<string, list<AccessRightReason>>` (employee id => reasons) instead of string lists. `AccessRightReason` carries `reason` as a plain string plus `projectId`, `packageId`, `teamId` and `taskId` as factro sends them in `IAccessRightReason`. `fixtures/access-rights.json` follows the real response shape.
 
 ### Added
