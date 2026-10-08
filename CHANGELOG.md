@@ -11,10 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `AccessRights::readRights()` and `writeRights()` return `array<string, list<AccessRightReason>>` (employee id => reasons) instead of string lists. `AccessRightReason` carries `reason` as a plain string plus `projectId`, `packageId`, `teamId` and `taskId` as factro sends them in `IAccessRightReason`. `fixtures/access-rights.json` follows the real response shape.
 
-## [1.0.0]
-
-First public release.
-
 ### Added
 
 - `FactroClientFactory` builds the transport chain: request policy, retry (GET only), rate limit (sliding window 480/min per token), scoping with raw token header and timeouts. `Transport::getMany()` sends GETs concurrently.
