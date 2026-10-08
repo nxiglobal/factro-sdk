@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `ChecklistEntryChanges` takes `clear` as well (e.g. `['assigneeId', 'endDate']` empties assignee and end date of an entry).
 - `NewTask` takes `clear` as well, for its optional fields (e.g. `['executorId']` creates a task without executor).
 - `TaskChanges` and `PackageChanges` take `clear`, a list of payload keys sent as explicit `null` to empty the field in factro (e.g. `['colorScheme']`). An unknown key or a key that is also set throws `\InvalidArgumentException`.
 

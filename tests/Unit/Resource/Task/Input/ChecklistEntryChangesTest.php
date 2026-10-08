@@ -30,4 +30,12 @@ final class ChecklistEntryChangesTest extends TestCase
         self::assertTrue(new ChecklistEntryChanges()->isEmpty());
         self::assertFalse(new ChecklistEntryChanges(checked: false)->isEmpty());
     }
+
+    public function testClearedFieldsAreSentAsNull(): void
+    {
+        $payload = new ChecklistEntryChanges(checked: true, clear: ['assigneeId', 'endDate'])->toPayload(new \DateTimeZone('UTC'));
+
+        self::assertSame(['checked' => true, 'assigneeId' => null, 'endDate' => null], $payload);
+        self::assertFalse(new ChecklistEntryChanges(clear: ['endDate'])->isEmpty());
+    }
 }
