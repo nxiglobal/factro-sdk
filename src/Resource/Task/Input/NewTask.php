@@ -15,12 +15,14 @@ use Psr\Clock\ClockInterface;
  * Body of POST /tasks.
  *
  * targetParentId is the package the task is created in. Whether factro also accepts a project id
- * here (task on project level) is undocumented.
+ * here (task on project level) is undocumented. Fields named in $clear are sent as explicit null instead of
+ * leaving them to factro's default, e.g. ['executorId'] creates a task without executor (live test 2026-10-02).
  */
 final readonly class NewTask
 {
     /**
      * @param array<string, mixed>|null $customFields
+     * @param list<string>              $clear        optional payload keys to send as null, e.g. ['executorId']
      */
     public function __construct(
         public string $title,
@@ -37,6 +39,7 @@ final readonly class NewTask
         public ?string $colorScheme = null,
         public ?array $customFields = null,
         public ?Urgency $urgency = null,
+        public array $clear = [],
     ) {
     }
 
@@ -55,7 +58,7 @@ final readonly class NewTask
             $payload['creationDate'] = FactroDateTime::toIsoUtc($clock->now());
         }
 
-        return $payload + Payload::withoutNulls([
+        return $payload + Payload::withoutNullsExcept([
             'description' => $this->description,
             'startDate' => $this->startDate?->toFactro($timezone),
             'endDate' => $this->endDate?->toFactro($timezone),
@@ -67,6 +70,6 @@ final readonly class NewTask
             'colorScheme' => $this->colorScheme,
             'customFields' => $this->customFields,
             'urgency' => $this->urgency?->value,
-        ]);
+        ], $this->clear);
     }
 }
