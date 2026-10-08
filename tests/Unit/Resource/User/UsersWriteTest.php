@@ -31,9 +31,10 @@ final class UsersWriteTest extends TestCase
     public function testCreatePostsPayloadAndReturnsUser(): void
     {
         $client = MockFactro::client(['POST /users' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
                 '{"emailAddress":"new@example.invalid","firstName":"New","lastName":"User","securityGroup":"BasicRights","city":"Hamburg"}',
-                (string) $o['body'],
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('user'));
@@ -47,7 +48,8 @@ final class UsersWriteTest extends TestCase
     public function testUpdateSendsOnlyChangedFields(): void
     {
         $client = MockFactro::client(['PUT /users/u1' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('{"lastName":"New"}', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('{"lastName":"New"}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('user'));
         }]);
@@ -72,10 +74,11 @@ final class UsersWriteTest extends TestCase
     public function testCreateManyPostsListToUsersUsers(): void
     {
         $client = MockFactro::client(['POST /users/users' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
                 '[{"emailAddress":"a@example.invalid","firstName":"A","lastName":"A","securityGroup":"BasicRights"},'
                 .'{"emailAddress":"b@example.invalid","firstName":"B","lastName":"B","securityGroup":"GuestRights"}]',
-                (string) $o['body'],
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('users'));
@@ -99,7 +102,8 @@ final class UsersWriteTest extends TestCase
     public function testUpdateManyPutsListWithIds(): void
     {
         $client = MockFactro::client(['PUT /users/users' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('[{"id":"u1","city":"Hamburg"},{"id":"u2","securityGroup":"AllRights"}]', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"u1","city":"Hamburg"},{"id":"u2","securityGroup":"AllRights"}]', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('users'));
         }]);
@@ -127,7 +131,8 @@ final class UsersWriteTest extends TestCase
     public function testCreateEmployeeTagPostsName(): void
     {
         $client = MockFactro::client(['POST /users/tags' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('{"name":"Tag 1"}', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('{"name":"Tag 1"}', $o['body']);
 
             return new JsonMockResponse(Fixtures::json('employee-tags')[0]);
         }]);
@@ -150,7 +155,8 @@ final class UsersWriteTest extends TestCase
     {
         $client = MockFactro::client([
             'PUT /users/u1/tags' => static function (string $m, string $u, array $o): MockResponse {
-                self::assertJsonStringEqualsJsonString('{"tagId":"t1"}', (string) $o['body']);
+                self::assertIsString($o['body']);
+                self::assertJsonStringEqualsJsonString('{"tagId":"t1"}', $o['body']);
 
                 return new MockResponse('', ['http_code' => 204]);
             },
@@ -182,7 +188,8 @@ final class UsersWriteTest extends TestCase
     {
         $client = MockFactro::client([
             'PUT /users/u1/substitutes' => static function (string $m, string $u, array $o): MockResponse {
-                self::assertJsonStringEqualsJsonString('{"substituteId":"u2"}', (string) $o['body']);
+                self::assertIsString($o['body']);
+                self::assertJsonStringEqualsJsonString('{"substituteId":"u2"}', $o['body']);
 
                 return new MockResponse('', ['http_code' => 204]);
             },
@@ -223,9 +230,10 @@ final class UsersWriteTest extends TestCase
     public function testCreateAbsencePostsToUserPathWithoutEmployeeId(): void
     {
         $client = MockFactro::client(['POST /users/u1/absences' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
                 '{"startDate":"2026-10-04T22:00:00.000Z","endDate":"2026-10-09T22:00:00.000Z","type":"Planned"}',
-                (string) $o['body'],
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('absence'));
@@ -244,10 +252,11 @@ final class UsersWriteTest extends TestCase
     public function testCreateAbsencesPostsListWithEmployeeIds(): void
     {
         $client = MockFactro::client(['POST /users/absences' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
                 '[{"startDate":"2026-10-04T22:00:00.000Z","endDate":"2026-10-09T22:00:00.000Z","type":"Planned","employeeId":"u1"},'
                 .'{"startDate":"2026-09-13T22:00:00.000Z","endDate":"2026-09-14T22:00:00.000Z","type":"Unplanned","employeeId":"u2"}]',
-                (string) $o['body'],
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('absences'));
@@ -279,7 +288,8 @@ final class UsersWriteTest extends TestCase
     public function testUpdateAbsencePutsChanges(): void
     {
         $client = MockFactro::client(['PUT /users/absences/a1' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('{"endDate":"2026-10-11T22:00:00.000Z","type":"Unplanned"}', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('{"endDate":"2026-10-11T22:00:00.000Z","type":"Unplanned"}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('absence'));
         }]);
@@ -298,7 +308,8 @@ final class UsersWriteTest extends TestCase
     public function testUpdateAbsencesPutsListWithIds(): void
     {
         $client = MockFactro::client(['PUT /users/absences' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('[{"id":"a1","type":"Planned"},{"id":"a2","startDate":"2026-09-01T00:00:00.000Z"}]', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"a1","type":"Planned"},{"id":"a2","startDate":"2026-09-01T00:00:00.000Z"}]', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('absences'));
         }]);
