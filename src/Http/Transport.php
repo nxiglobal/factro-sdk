@@ -35,6 +35,21 @@ final readonly class Transport
     }
 
     /**
+     * Keeps the token out of print_r() and var_dump(): the decorated client carries it in its default headers.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo(): array
+    {
+        return [
+            'baseUrl' => $this->options->baseUrl,
+            'policy' => $this->options->policy,
+            'timezone' => $this->options->timezone->getName(),
+            'userAgent' => $this->options->userAgent,
+        ];
+    }
+
+    /**
      * @param array<string, scalar> $query
      * @param MultipartBody|null    $multipart a multipart/form-data body (document uploads); mutually exclusive with $json
      *

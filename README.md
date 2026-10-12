@@ -182,6 +182,8 @@ $client->workRecords()->create(new NewWorkRecord(
 
 The token is a `#[\SensitiveParameter]` everywhere, is never logged and never appears in an exception message.
 
+`print_r()` and `var_dump()` of `FactroClient` show the base URL and the policy, not the token. Symfony's VarDumper ignores `__debugInfo()` and still shows it. Stack traces of Symfony HttpClient carry the request options, token included, as call arguments: run production with `zend.exception_ignore_args=On` (the `php.ini-production` default) and configure error trackers to drop frame arguments.
+
 ## Errors
 
 All exceptions implement `Nxi\Factro\Exception\FactroException`.

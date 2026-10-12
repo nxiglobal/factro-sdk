@@ -76,4 +76,17 @@ final class FactroClientFactoryTest extends TestCase
         self::assertSame(7.5, $seen['max_duration']);
         self::assertSame(2.5, $seen['timeout']);
     }
+
+    public function testDebugOutputHidesToken(): void
+    {
+        $client = FactroClientFactory::create('SECRET-TOKEN');
+
+        ob_start();
+        var_dump($client);
+        $dump = (string) ob_get_clean();
+
+        self::assertStringNotContainsString('SECRET-TOKEN', print_r($client, true));
+        self::assertStringNotContainsString('SECRET-TOKEN', $dump);
+        self::assertStringContainsString('https://cloud.factro.com/api/core', $dump);
+    }
 }

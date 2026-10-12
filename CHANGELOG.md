@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `FactroClient` and `Transport` implement `__debugInfo()`, so `print_r()` and `var_dump()` of a client no longer show the token.
 - `FactroClientFactory` builds the transport chain: request policy, retry (GET only), rate limit (sliding window 480/min per token), scoping with raw token header and timeouts. `Transport::getMany()` sends GETs concurrently.
 - `FactroOptions`, `RequestPolicy`, `RateLimitInfo` and the exception family under `Nxi\Factro\Exception`.
 - Coverage of the factro Core API (OpenAPI document of 2026-09-11) except `GET /tasks` and the deprecated `/efforts*` routes, grouped by resource under `Nxi\Factro\Resource`:

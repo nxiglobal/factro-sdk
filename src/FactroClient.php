@@ -34,6 +34,16 @@ final readonly class FactroClient
     {
     }
 
+    /**
+     * Keeps the token out of print_r() and var_dump(): it sits in the default headers deep inside the transport.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo(): array
+    {
+        return ['transport' => $this->transport];
+    }
+
     public function projects(): Projects
     {
         return new Projects($this->transport, $this->options);
