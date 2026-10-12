@@ -49,3 +49,9 @@ routes are covered by work records. Webhook `Action` (about 300 values) stays a 
 Fixtures ship with the package and are public. A recording from a real tenant would publish tenant and
 object IDs and custom field names, and the former recorder covered only a fifth of the files. Fixtures are
 written by hand from the OpenAPI spec and observed API behaviour; reported deviations are fixed the same way.
+
+## 2026-10-12 Symfony 7.4 LTS is supported for the whole 1.x line
+
+The SDK uses no Symfony 8.0-only API, so the components accept `^7.4 || ^8.0` and projects on the LTS
+(maintained until 2029) can install it. Dropping 7.4 later is a BC break and needs a major version. CI runs
+the tests against the lowest and the newest 7.4 and the lowest 8.x.

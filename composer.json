@@ -20,10 +20,10 @@
     "require": {
         "php": "^8.4",
         "psr/log": "^3.0",
-        "symfony/clock": "^8.0",
-        "symfony/http-client": "^8.0",
+        "symfony/clock": "^7.4 || ^8.0",
+        "symfony/http-client": "^7.4 || ^8.0",
         "symfony/http-client-contracts": "^3.5",
-        "symfony/rate-limiter": "^8.0"
+        "symfony/rate-limiter": "^7.4 || ^8.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95",
@@ -31,7 +31,7 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^13.2",
         "rector/rector": "^2.5",
-        "symfony/cache": "^8.0"
+        "symfony/cache": "^7.4 || ^8.0"
     },
     "suggest": {
         "symfony/cache": "CacheStorage for the rate limiter when several PHP processes share one token",

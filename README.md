@@ -14,7 +14,7 @@ This package is a PHP SDK for the factro Core API, built exclusively on Symfony 
 ## Requirements
 
 - PHP 8.4 or newer
-- Symfony 8 components: `symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`
+- Symfony 7.4 LTS or 8 components: `symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`
 - `psr/log` 3
 - a token for the factro Core API
 
