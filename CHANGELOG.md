@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Document uploads build their `multipart/form-data` body with `symfony/mime`, which is a new dependency. `DocumentUpload` rejects a content type that is not a media type (`type/subtype` with optional parameters, no control characters) with `\InvalidArgumentException`; before, CR/LF in the content type ended up raw in the part headers. `toMultipart()` (`@internal`) returns a `FormDataPart`, and `Http\MultipartBody` is gone.
 - `FactroOptions` validates on construction and throws `\InvalidArgumentException` naming the option: `baseUrl` must be an absolute https URL (plain http would send the token unencrypted), both timeouts must be greater than 0, `maxRetries` and `maxRetryAfterSeconds` must not be negative, `userAgent` must not contain CR or LF.
 - Integer fields reject floats outside the int range (`1e400`, `1e19`) with `HydrationException` instead of hydrating them as `0` or a wrapped negative number.
 - A retried 429 without `Retry-After` waits for `t` from the `ratelimit` header (capped at `maxRetryAfterSeconds`) instead of backing off exponentially from 500 ms into the same window.

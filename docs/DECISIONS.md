@@ -35,6 +35,8 @@ holds without `@var` assertions. JSON object keys are always strings, so the cop
 
 ## 2026-09-14 Document uploads build multipart bodies without symfony/mime
 
+Superseded by 2026-10-12 "Document uploads use symfony/mime".
+
 `POST .../documents` has no documented request body. `Http\MultipartBody` sends one `multipart/form-data`
 part named `file`, taken from observed API behaviour; `symfony/mime` is not worth a dependency for one route.
 
@@ -55,3 +57,11 @@ written by hand from the OpenAPI spec and observed API behaviour; reported devia
 The SDK uses no Symfony 8.0-only API, so the components accept `^7.4 || ^8.0` and projects on the LTS
 (maintained until 2029) can install it. Dropping 7.4 later is a BC break and needs a major version. CI runs
 the tests against the lowest and the newest 7.4 and the lowest 8.x.
+
+## 2026-10-12 Document uploads use symfony/mime
+
+`DocumentUpload::toMultipart()` builds a `FormDataPart` instead of the hand-written `Http\MultipartBody`.
+`symfony/mime` encodes header values, so a content type with CR/LF can no longer add part headers. It does
+not reject invalid values (a type without `/` ends in a PHP warning and a `TypeError`), so `DocumentUpload`
+still validates the media type. `"`, CR and LF are stripped from the file name because `symfony/mime` would
+percent-encode them. Parts carry `Content-Transfer-Encoding: 8bit`, which `FormDataPart` always sets.

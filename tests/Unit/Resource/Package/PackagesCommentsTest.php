@@ -60,11 +60,12 @@ final class PackagesCommentsTest extends TestCase
             'POST /projects/'.Id::P1.'/packages/'.Id::K1.'/documents' => static function (string $m, string $u, array $o): MockResponse {
                 self::assertIsString($o['body']);
                 self::assertStringContainsString('name="file"; filename="notes.txt"', $o['body']);
-                self::assertStringContainsString("Content-Type: text/plain\r\n\r\nhello\r\n", $o['body']);
+                self::assertStringContainsString("Content-Type: text/plain\r\n", $o['body']);
+                self::assertStringContainsString("\r\n\r\nhello\r\n", $o['body']);
                 self::assertIsArray($o['normalized_headers']);
                 self::assertIsArray($o['normalized_headers']['content-type']);
                 self::assertIsString($o['normalized_headers']['content-type'][0]);
-                self::assertStringStartsWith('Content-Type: multipart/form-data; boundary=nxi-factro-', $o['normalized_headers']['content-type'][0]);
+                self::assertStringStartsWith('Content-Type: multipart/form-data; boundary=', $o['normalized_headers']['content-type'][0]);
 
                 return JsonMockResponse::fromFile(Fixtures::path('document'));
             },

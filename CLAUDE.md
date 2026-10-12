@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-`nxi/factro-sdk`: unofficial PHP 8.4 SDK for the factro Core API, a library built only on Symfony components (`http-client`, `rate-limiter`, `clock`). Public, MIT, SemVer.
+`nxi/factro-sdk`: unofficial PHP 8.4 SDK for the factro Core API, a library built only on Symfony components (`http-client`, `rate-limiter`, `clock`, `mime`). Public, MIT, SemVer.
 
 ## Commands
 

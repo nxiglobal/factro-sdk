@@ -23,6 +23,7 @@
         "symfony/clock": "^7.4 || ^8.0",
         "symfony/http-client": "^7.4 || ^8.0",
         "symfony/http-client-contracts": "^3.5",
+        "symfony/mime": "^7.4 || ^8.0",
         "symfony/rate-limiter": "^7.4 || ^8.0"
     },
     "require-dev": {

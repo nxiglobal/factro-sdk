@@ -13,6 +13,7 @@ use Nxi\Factro\Exception\UnexpectedResponseException;
 use Nxi\Factro\FactroOptions;
 use Nxi\Factro\RateLimitInfo;
 use Psr\Log\LogLevel;
+use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -51,13 +52,13 @@ final readonly class Transport
 
     /**
      * @param array<string, scalar> $query
-     * @param MultipartBody|null    $multipart a multipart/form-data body (document uploads); mutually exclusive with $json
+     * @param FormDataPart|null     $multipart a multipart/form-data body (document uploads); mutually exclusive with $json
      *
      * @return array<mixed>|null decoded JSON; null for 204 or an empty body
      *
      * @throws FactroRequestException|TransportException|OperationNotPermittedException
      */
-    public function request(string $method, string $path, array $query = [], mixed $json = null, ?MultipartBody $multipart = null): ?array
+    public function request(string $method, string $path, array $query = [], mixed $json = null, ?FormDataPart $multipart = null): ?array
     {
         $this->assertRelativePath($path);
         $method = strtoupper($method);
@@ -69,8 +70,8 @@ final readonly class Transport
             $requestOptions['json'] = $json;
         }
         if (null !== $multipart) {
-            $requestOptions['body'] = $multipart->content;
-            $requestOptions['headers'] = ['Content-Type' => $multipart->contentType()];
+            $requestOptions['body'] = $multipart->bodyToString();
+            $requestOptions['headers'] = $multipart->getPreparedHeaders()->toArray();
         }
 
         try {

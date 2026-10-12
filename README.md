@@ -9,7 +9,7 @@
 
 [factro](https://www.factro.de) is a web-based project management software made in Germany. Its Core API is a REST API for projects, packages, tasks, users, work records and the other objects of a factro tenant; the official documentation is at https://cloud.factro.com/api/core/docs/.
 
-This package is a PHP SDK for the factro Core API, built exclusively on Symfony components (`symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`). It encapsulates the API's quirks (raw token header, IETF rate-limit headers, mixed date formats, partial-object PUT semantics) behind typed Api classes, readonly DTOs and a small exception family.
+This package is a PHP SDK for the factro Core API, built exclusively on Symfony components (`symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`, `symfony/mime`). It encapsulates the API's quirks (raw token header, IETF rate-limit headers, mixed date formats, partial-object PUT semantics) behind typed Api classes, readonly DTOs and a small exception family.
 
 ## Requirements
 
