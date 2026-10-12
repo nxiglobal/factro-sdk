@@ -8,6 +8,7 @@ use Nxi\Factro\Exception\FactroException;
 use Nxi\Factro\Exception\FactroRequestException;
 use Nxi\Factro\Exception\NotFoundException;
 use Nxi\Factro\Exception\TransportException;
+use Nxi\Factro\Exception\UnexpectedResponseException;
 use Nxi\Factro\FactroOptions;
 use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\RateLimitInfo;
@@ -39,7 +40,7 @@ final readonly class Transport
      *
      * @return array<mixed>|null decoded JSON; null for 204 or an empty body
      *
-     * @throws FactroRequestException|TransportException|OperationNotPermittedException|\JsonException
+     * @throws FactroRequestException|TransportException|OperationNotPermittedException
      */
     public function request(string $method, string $path, array $query = [], mixed $json = null, ?MultipartBody $multipart = null): ?array
     {
@@ -127,9 +128,13 @@ final readonly class Transport
         if ('' === trim($body)) {
             return null;
         }
-        $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new UnexpectedResponseException(sprintf('factro returned invalid JSON for %s %s (HTTP %d).', $method, $path, $status), $method, $path, $status, $body, $headers, $e);
+        }
         if (!is_array($decoded)) {
-            throw new \UnexpectedValueException(sprintf('factro returned a JSON scalar for %s %s', $method, $path));
+            throw new UnexpectedResponseException(sprintf('factro returned a JSON scalar for %s %s (HTTP %d).', $method, $path, $status), $method, $path, $status, $body, $headers);
         }
 
         return $decoded;

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- A success response with invalid JSON or a JSON scalar throws `UnexpectedResponseException` (a `FactroRequestException`, so a `FactroException`) instead of `\JsonException` or `\UnexpectedValueException`.
+- `FactroDateTime::fromIsoUtc()` and `fromDateAndTime()` reject impossible dates and times (`2026-02-31`, `24:00`, `25:99`) instead of rolling them over or throwing `\DateMalformedStringException`. During hydration this surfaces as `HydrationException`.
 - `RequestPolicy` validates when it is built: methods are upper-cased (`['get']` used to deny every request) and anything outside GET, POST, PUT and DELETE throws `\InvalidArgumentException`, as does an invalid deny pattern (it used to permit everything). A pattern that fails at match time (backtrack limit) denies the request.
 - Ids in request paths must be UUIDs. Resource methods throw `\InvalidArgumentException` for anything else (`''`, `.`, `..`, slashes, short ids like `'T1'`) before a request is sent. Before, `rawurlencode()` let dot segments through, so `packages()->delete($projectId, '..')` bypassed deny patterns and `tasks()->get('')` hit `GET /tasks/`. `webhooks()->payloadsByAction()` rejects an empty action and `.`/`..`.
 - `HydrationException` exposes `actualType` (`get_debug_type()` of the received value, e.g. `null`, `int`, `array`) for logging without the value itself. The constructor signature is unchanged.

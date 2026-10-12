@@ -88,6 +88,9 @@ final class FieldTest extends TestCase
         self::assertNull(Field::nullableYmd([], 'k', self::OWNER));
         $this->assertHydrationError(static fn () => Field::isoUtc(['k' => '2026-08-31'], 'k', self::OWNER), 'expected ISO-8601 UTC timestamp, got string "2026-08-31"');
         $this->assertHydrationError(static fn () => Field::isoUtc([], 'k', self::OWNER), 'expected ISO-8601 UTC timestamp, got null');
+        foreach (['2026-02-31T00:00:00Z', '2026-01-01T25:99:00Z', '2026-01-01T24:00:00Z'] as $impossible) {
+            $this->assertHydrationError(static fn () => Field::nullableIsoUtc(['k' => $impossible], 'k', self::OWNER), sprintf('expected ISO-8601 UTC timestamp, got string "%s"', $impossible));
+        }
         $this->assertHydrationError(static fn () => Field::jsTimestamp(['k' => '1756713600000'], 'k', self::OWNER), 'expected JavaScript timestamp, got string "1756713600000"');
         $this->assertHydrationError(static fn () => Field::ymd(['k' => '2026-02-30'], 'k', self::OWNER), 'expected Y-m-d date, got string "2026-02-30"');
     }

@@ -17,12 +17,15 @@ final class FactroDateTime
 
     /**
      * Accepts "2026-08-31T22:00:00.000Z" with milliseconds, microseconds or no fraction.
+     * Impossible dates and times ("2026-02-31", "24:00:00") are rejected instead of rolling over.
      *
      * @throws \InvalidArgumentException
      */
     public static function fromIsoUtc(string $value): \DateTimeImmutable
     {
-        if (1 !== preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$/', $value)) {
+        if (1 !== preg_match('/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d{1,6})?Z$/', $value, $m)
+            || !checkdate((int) $m[2], (int) $m[3], (int) $m[1])
+            || !self::isTime((int) $m[4], (int) $m[5], (int) $m[6])) {
             throw new \InvalidArgumentException(sprintf('Expected an ISO-8601 UTC timestamp, got "%s".', $value));
         }
 
@@ -53,7 +56,7 @@ final class FactroDateTime
     public static function fromDateAndTime(CalendarDate $date, ?string $time, ?int $utcOffsetMinutes, \DateTimeZone $fallback): \DateTimeImmutable
     {
         $time ??= '00:00';
-        if (1 !== preg_match('/^\d{2}:\d{2}$/', $time)) {
+        if (1 !== preg_match('/^(\d{2}):(\d{2})$/', $time, $m) || !self::isTime((int) $m[1], (int) $m[2], 0)) {
             throw new \InvalidArgumentException(sprintf('Expected a time as HH:MM, got "%s".', $time));
         }
         $zone = null === $utcOffsetMinutes
@@ -61,6 +64,11 @@ final class FactroDateTime
             : new \DateTimeZone(sprintf('%s%02d:%02d', $utcOffsetMinutes < 0 ? '-' : '+', intdiv(abs($utcOffsetMinutes), 60), abs($utcOffsetMinutes) % 60));
 
         return new \DateTimeImmutable($date->toYmd().' '.$time.':00', $zone);
+    }
+
+    private static function isTime(int $hour, int $minute, int $second): bool
+    {
+        return $hour <= 23 && $minute <= 59 && $second <= 59;
     }
 
     /**

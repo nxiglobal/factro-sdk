@@ -193,10 +193,11 @@ All exceptions implement `Nxi\Factro\Exception\FactroException`.
 | `ValidationException` | HTTP 400 and 422, `errors()` returns the body's error list |
 | `RateLimitException` | HTTP 429, `retryAfterSeconds()` from `Retry-After` or the `ratelimit` header |
 | `ServerException` | HTTP 500 to 599 |
+| `UnexpectedResponseException` | success status, but the body is not a JSON object or array (HTML page, truncated JSON, scalar) |
 | `FactroRequestException` | every other status of 400 or higher; base class of the above |
 | `TransportException` | DNS, TCP, TLS or timeout failure; `possiblyExecuted()` is true for POST, PUT, DELETE |
 | `OperationNotPermittedException` | the `RequestPolicy` forbids the call; thrown before anything is sent |
-| `HydrationException` | a response field is missing or has an unexpected type |
+| `HydrationException` | a response field is missing or has an unexpected type, or a timestamp names an impossible date or time |
 
 `FactroRequestException` carries `method`, `path`, `statusCode`, `rawBody`, `headers` and offers `factroMessage()` (from a JSON `message`/`error`/`detail`/`title` or the plain-text body).
 
