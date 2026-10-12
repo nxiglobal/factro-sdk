@@ -12,6 +12,7 @@ use Nxi\Factro\Resource\AccessRight\Output\AccessRightReason;
 use Nxi\Factro\Resource\AccessRight\Output\EmployeeAccessRight;
 use Nxi\Factro\Resource\AccessRight\Output\TeamAccessRight;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -93,21 +94,21 @@ final class AccessRightsTest extends TestCase
         $rights = $this->rights([
             'PUT /tasks/t1/read_rights' => static function (string $m, string $u, array $o): MockResponse {
                 self::assertIsString($o['body']);
-                self::assertJsonStringEqualsJsonString('{"employeeId":"e1"}', $o['body']);
+                self::assertJsonStringEqualsJsonString('{"employeeId":"'.Id::E1.'"}', $o['body']);
 
                 return JsonMockResponse::fromFile(Fixtures::path('employee-access-right'));
             },
             'PUT /tasks/t1/write_rights' => JsonMockResponse::fromFile(Fixtures::path('employee-access-right')),
-            'DELETE /tasks/t1/read_rights/e1' => new MockResponse('', ['http_code' => 204]),
-            'DELETE /tasks/t1/write_rights/e1' => new MockResponse('', ['http_code' => 204]),
+            'DELETE /tasks/t1/read_rights/'.Id::E1 => new MockResponse('', ['http_code' => 204]),
+            'DELETE /tasks/t1/write_rights/'.Id::E1 => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        $granted = $rights->grantRead('e1');
+        $granted = $rights->grantRead(Id::E1);
         self::assertSame('f5f10d08-5b3a-5c46-8d91-9dd049f5d2e5', $granted->employeeId);
         self::assertFalse($granted->canEdit);
-        self::assertInstanceOf(EmployeeAccessRight::class, $rights->grantWrite('e1'));
-        $rights->revokeRead('e1');
-        $rights->revokeWrite('e1');
+        self::assertInstanceOf(EmployeeAccessRight::class, $rights->grantWrite(Id::E1));
+        $rights->revokeRead(Id::E1);
+        $rights->revokeWrite(Id::E1);
         $this->addToAssertionCount(2);
     }
 
@@ -116,19 +117,19 @@ final class AccessRightsTest extends TestCase
         $rights = $this->rights([
             'PUT /projects/p1/pk1/team_read_rights' => static function (string $m, string $u, array $o): MockResponse {
                 self::assertIsString($o['body']);
-                self::assertJsonStringEqualsJsonString('{"teamId":"team1"}', $o['body']);
+                self::assertJsonStringEqualsJsonString('{"teamId":"'.Id::TEAM1.'"}', $o['body']);
 
                 return JsonMockResponse::fromFile(Fixtures::path('team-access-right'));
             },
             'PUT /projects/p1/pk1/team_write_rights' => JsonMockResponse::fromFile(Fixtures::path('team-access-right')),
-            'DELETE /projects/p1/pk1/team_read_rights/team1' => new MockResponse('', ['http_code' => 204]),
-            'DELETE /projects/p1/pk1/team_write_rights/team1' => new MockResponse('', ['http_code' => 204]),
+            'DELETE /projects/p1/pk1/team_read_rights/'.Id::TEAM1 => new MockResponse('', ['http_code' => 204]),
+            'DELETE /projects/p1/pk1/team_write_rights/'.Id::TEAM1 => new MockResponse('', ['http_code' => 204]),
         ], '/projects/p1/packages/pk1', '/projects/p1/pk1');
 
-        self::assertSame('c4d5e6f7-a8b9-5c0d-9e1f-3a4b5c6d7e8f', $rights->grantTeamRead('team1')->teamId);
-        self::assertInstanceOf(TeamAccessRight::class, $rights->grantTeamWrite('team1'));
-        $rights->revokeTeamRead('team1');
-        $rights->revokeTeamWrite('team1');
+        self::assertSame('c4d5e6f7-a8b9-5c0d-9e1f-3a4b5c6d7e8f', $rights->grantTeamRead(Id::TEAM1)->teamId);
+        self::assertInstanceOf(TeamAccessRight::class, $rights->grantTeamWrite(Id::TEAM1));
+        $rights->revokeTeamRead(Id::TEAM1);
+        $rights->revokeTeamWrite(Id::TEAM1);
         $this->addToAssertionCount(2);
     }
 }

@@ -36,7 +36,7 @@ final class Users extends AbstractResource
      */
     public function get(string $userId): User
     {
-        return User::fromArray($this->object($this->transport->request('GET', '/users/'.rawurlencode($userId))));
+        return User::fromArray($this->object($this->transport->request('GET', '/users/'.self::id($userId))));
     }
 
     /**
@@ -58,7 +58,7 @@ final class Users extends AbstractResource
      */
     public function tags(string $userId): array
     {
-        return array_map(EmployeeTag::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.rawurlencode($userId).'/tags')));
+        return array_map(EmployeeTag::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.self::id($userId).'/tags')));
     }
 
     /**
@@ -75,7 +75,7 @@ final class Users extends AbstractResource
         }
         $paths = [];
         foreach ($userIds as $userId) {
-            $paths['/users/'.rawurlencode($userId).'/tags'] = $userId;
+            $paths['/users/'.self::id($userId).'/tags'] = $userId;
         }
         $bodies = $this->transport->getMany(array_keys($paths), $concurrency);
         $result = [];
@@ -113,7 +113,7 @@ final class Users extends AbstractResource
             throw new \InvalidArgumentException('UserChanges must set at least one field.');
         }
 
-        return User::fromArray($this->object($this->transport->request('PUT', '/users/'.rawurlencode($userId), json: $changes->toPayload())));
+        return User::fromArray($this->object($this->transport->request('PUT', '/users/'.self::id($userId), json: $changes->toPayload())));
     }
 
     /**
@@ -121,7 +121,7 @@ final class Users extends AbstractResource
      */
     public function delete(string $userId): void
     {
-        $this->transport->request('DELETE', '/users/'.rawurlencode($userId));
+        $this->transport->request('DELETE', '/users/'.self::id($userId));
     }
 
     /**
@@ -177,7 +177,7 @@ final class Users extends AbstractResource
      */
     public function deleteEmployeeTag(string $tagId): void
     {
-        $this->transport->request('DELETE', '/users/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/users/tags/'.self::id($tagId));
     }
 
     /**
@@ -185,7 +185,7 @@ final class Users extends AbstractResource
      */
     public function addTag(string $userId, string $tagId): void
     {
-        $this->transport->request('PUT', '/users/'.rawurlencode($userId).'/tags', json: ['tagId' => $tagId]);
+        $this->transport->request('PUT', '/users/'.self::id($userId).'/tags', json: ['tagId' => $tagId]);
     }
 
     /**
@@ -193,7 +193,7 @@ final class Users extends AbstractResource
      */
     public function removeTag(string $userId, string $tagId): void
     {
-        $this->transport->request('DELETE', '/users/'.rawurlencode($userId).'/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/users/'.self::id($userId).'/tags/'.self::id($tagId));
     }
 
     /**
@@ -203,7 +203,7 @@ final class Users extends AbstractResource
      */
     public function substitutes(string $userId): array
     {
-        return array_map(User::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.rawurlencode($userId).'/substitutes')));
+        return array_map(User::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.self::id($userId).'/substitutes')));
     }
 
     /**
@@ -213,7 +213,7 @@ final class Users extends AbstractResource
      */
     public function substitutedUsers(string $userId): array
     {
-        return array_map(User::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.rawurlencode($userId).'/substituted')));
+        return array_map(User::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.self::id($userId).'/substituted')));
     }
 
     /**
@@ -221,7 +221,7 @@ final class Users extends AbstractResource
      */
     public function addSubstitute(string $userId, string $substituteId): void
     {
-        $this->transport->request('PUT', '/users/'.rawurlencode($userId).'/substitutes', json: ['substituteId' => $substituteId]);
+        $this->transport->request('PUT', '/users/'.self::id($userId).'/substitutes', json: ['substituteId' => $substituteId]);
     }
 
     /**
@@ -229,7 +229,7 @@ final class Users extends AbstractResource
      */
     public function removeSubstitute(string $userId, string $substituteId): void
     {
-        $this->transport->request('DELETE', '/users/'.rawurlencode($userId).'/substitutes/'.rawurlencode($substituteId));
+        $this->transport->request('DELETE', '/users/'.self::id($userId).'/substitutes/'.self::id($substituteId));
     }
 
     /**
@@ -257,7 +257,7 @@ final class Users extends AbstractResource
      */
     public function absencesOf(string $userId): array
     {
-        return array_map(Absence::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.rawurlencode($userId).'/absences')));
+        return array_map(Absence::fromArray(...), $this->rows($this->transport->request('GET', '/users/'.self::id($userId).'/absences')));
     }
 
     /**
@@ -265,7 +265,7 @@ final class Users extends AbstractResource
      */
     public function createAbsence(string $userId, NewAbsence $absence): Absence
     {
-        return Absence::fromArray($this->object($this->transport->request('POST', '/users/'.rawurlencode($userId).'/absences', json: $absence->toPayload())));
+        return Absence::fromArray($this->object($this->transport->request('POST', '/users/'.self::id($userId).'/absences', json: $absence->toPayload())));
     }
 
     /**
@@ -294,7 +294,7 @@ final class Users extends AbstractResource
             throw new \InvalidArgumentException('AbsenceChanges must set at least one field.');
         }
 
-        return Absence::fromArray($this->object($this->transport->request('PUT', '/users/absences/'.rawurlencode($absenceId), json: $changes->toPayload())));
+        return Absence::fromArray($this->object($this->transport->request('PUT', '/users/absences/'.self::id($absenceId), json: $changes->toPayload())));
     }
 
     /**
@@ -325,6 +325,6 @@ final class Users extends AbstractResource
      */
     public function deleteAbsence(string $absenceId): void
     {
-        $this->transport->request('DELETE', '/users/absences/'.rawurlencode($absenceId));
+        $this->transport->request('DELETE', '/users/absences/'.self::id($absenceId));
     }
 }

@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\Webhook\Webhooks;
 use Nxi\Factro\Testing\Fixtures;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -48,6 +49,15 @@ final class WebhooksTest extends TestCase
 
         self::assertCount(2, $payloads);
         self::assertSame('TaskStateChanged', $payloads[0]->action);
+    }
+
+    #[TestWith([''])]
+    #[TestWith(['.'])]
+    #[TestWith(['..'])]
+    public function testPayloadsByActionRejectsEmptyAndDotActions(string $action): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        MockFactro::client([])->webhooks()->payloadsByAction($action, new \DateTimeImmutable('2026-09-01T00:00:00Z'));
     }
 
     public function testEmptyBodyYieldsEmptyList(): void

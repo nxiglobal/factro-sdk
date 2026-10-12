@@ -24,7 +24,7 @@ final class Packages extends AbstractResource
      */
     public function listByProject(string $projectId): array
     {
-        return array_map(Package::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.rawurlencode($projectId).'/packages')));
+        return array_map(Package::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.self::id($projectId).'/packages')));
     }
 
     /**
@@ -32,7 +32,7 @@ final class Packages extends AbstractResource
      */
     public function get(string $packageId): Package
     {
-        return Package::fromArray($this->object($this->transport->request('GET', '/packages/'.rawurlencode($packageId))));
+        return Package::fromArray($this->object($this->transport->request('GET', '/packages/'.self::id($packageId))));
     }
 
     /**
@@ -60,7 +60,7 @@ final class Packages extends AbstractResource
      */
     public function create(string $projectId, NewPackage $package): Package
     {
-        return Package::fromArray($this->object($this->transport->request('POST', '/projects/'.rawurlencode($projectId).'/packages', json: $package->toPayload())));
+        return Package::fromArray($this->object($this->transport->request('POST', '/projects/'.self::id($projectId).'/packages', json: $package->toPayload())));
     }
 
     /**
@@ -77,7 +77,7 @@ final class Packages extends AbstractResource
         }
         $payload = array_map(static fn (NewPackage $package): array => $package->toPayload(), array_values($packages));
 
-        return array_map(Package::fromArray(...), $this->rows($this->transport->request('POST', '/projects/'.rawurlencode($projectId).'/packages/packages', json: $payload)));
+        return array_map(Package::fromArray(...), $this->rows($this->transport->request('POST', '/projects/'.self::id($projectId).'/packages/packages', json: $payload)));
     }
 
     /**
@@ -112,7 +112,7 @@ final class Packages extends AbstractResource
             $payload[] = ['id' => $packageId] + $packageChanges->toPayload($this->options->timezone);
         }
 
-        return array_map(Package::fromArray(...), $this->rows($this->transport->request('PUT', '/projects/'.rawurlencode($projectId).'/packages/packages', json: $payload)));
+        return array_map(Package::fromArray(...), $this->rows($this->transport->request('PUT', '/projects/'.self::id($projectId).'/packages/packages', json: $payload)));
     }
 
     /**
@@ -211,7 +211,7 @@ final class Packages extends AbstractResource
      */
     public function comment(string $projectId, string $packageId, string $commentId): PackageComment
     {
-        return PackageComment::fromArray($this->object($this->transport->request('GET', $this->path($projectId, $packageId, '/comments/'.rawurlencode($commentId)))));
+        return PackageComment::fromArray($this->object($this->transport->request('GET', $this->path($projectId, $packageId, '/comments/'.self::id($commentId)))));
     }
 
     /**
@@ -227,7 +227,7 @@ final class Packages extends AbstractResource
      */
     public function deleteComment(string $projectId, string $packageId, string $commentId): void
     {
-        $this->transport->request('DELETE', $this->path($projectId, $packageId, '/comments/'.rawurlencode($commentId)));
+        $this->transport->request('DELETE', $this->path($projectId, $packageId, '/comments/'.self::id($commentId)));
     }
 
     /**
@@ -253,7 +253,7 @@ final class Packages extends AbstractResource
      */
     public function removeDocument(string $projectId, string $packageId, string $documentId): void
     {
-        $this->transport->request('DELETE', $this->path($projectId, $packageId, '/documents/'.rawurlencode($documentId)));
+        $this->transport->request('DELETE', $this->path($projectId, $packageId, '/documents/'.self::id($documentId)));
     }
 
     /**
@@ -266,7 +266,7 @@ final class Packages extends AbstractResource
             $this->transport,
             $this->options,
             $this->path($projectId, $packageId),
-            sprintf('/projects/%s/%s', rawurlencode($projectId), rawurlencode($packageId)),
+            sprintf('/projects/%s/%s', self::id($projectId), self::id($packageId)),
         );
     }
 
@@ -275,6 +275,6 @@ final class Packages extends AbstractResource
      */
     private function path(string $projectId, string $packageId, string $suffix = ''): string
     {
-        return sprintf('/projects/%s/packages/%s%s', rawurlencode($projectId), rawurlencode($packageId), $suffix);
+        return sprintf('/projects/%s/packages/%s%s', self::id($projectId), self::id($packageId), $suffix);
     }
 }

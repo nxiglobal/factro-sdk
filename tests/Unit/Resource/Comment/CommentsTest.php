@@ -8,6 +8,7 @@ use Nxi\Factro\Resource\Comment\CommentReferenceType;
 use Nxi\Factro\Resource\Comment\Comments;
 use Nxi\Factro\Resource\Comment\Output\Comment;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -21,20 +22,20 @@ final class CommentsTest extends TestCase
     public function testGetAndFind(): void
     {
         $client = MockFactro::client([
-            'GET /comments/c1' => static function (string $m, string $u): MockResponse {
+            'GET /comments/'.Id::C1 => static function (string $m, string $u): MockResponse {
                 self::assertSame('GET', $m);
-                self::assertSame(MockFactro::BASE_URL.'/comments/c1', $u);
+                self::assertSame(MockFactro::BASE_URL.'/comments/'.Id::C1, $u);
 
                 return JsonMockResponse::fromFile(Fixtures::path('comment'));
             },
-            'GET /comments/missing' => new MockResponse('not found', ['http_code' => 404]),
+            'GET /comments/'.Id::MISSING => new MockResponse('not found', ['http_code' => 404]),
         ]);
 
-        $comment = $client->comments()->get('c1');
+        $comment = $client->comments()->get(Id::C1);
         self::assertInstanceOf(Comment::class, $comment);
         self::assertSame(CommentReferenceType::TASK, $comment->referenceType);
-        self::assertInstanceOf(Comment::class, $client->comments()->find('c1'));
-        self::assertNull($client->comments()->find('missing'));
+        self::assertInstanceOf(Comment::class, $client->comments()->find(Id::C1));
+        self::assertNull($client->comments()->find(Id::MISSING));
     }
 
     public function testReferenceTypeValuesMatchApi(): void

@@ -14,6 +14,7 @@ use Nxi\Factro\Resource\Task\Output\Task;
 use Nxi\Factro\Resource\Task\Tasks;
 use Nxi\Factro\Resource\Task\TaskState;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -25,9 +26,9 @@ final class TasksTest extends TestCase
 {
     public function testListByProjectUsesByProjectEndpoint(): void
     {
-        $client = MockFactro::client(['GET /tasks/by-project/p1' => JsonMockResponse::fromFile(Fixtures::path('tasks-by-project'))]);
+        $client = MockFactro::client(['GET /tasks/by-project/'.Id::P1 => JsonMockResponse::fromFile(Fixtures::path('tasks-by-project'))]);
 
-        $tasks = $client->tasks()->listByProject('p1');
+        $tasks = $client->tasks()->listByProject(Id::P1);
 
         self::assertCount(5, $tasks);
         self::assertContainsOnlyInstancesOf(Task::class, $tasks);
@@ -36,13 +37,19 @@ final class TasksTest extends TestCase
     public function testGetAndFind(): void
     {
         $client = MockFactro::client([
-            'GET /tasks/t1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('task')),
-            'GET /tasks/missing' => new MockResponse(Fixtures::raw('errors/404-task.txt'), ['http_code' => 404]),
+            'GET /tasks/'.Id::T1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('task')),
+            'GET /tasks/'.Id::MISSING => new MockResponse(Fixtures::raw('errors/404-task.txt'), ['http_code' => 404]),
         ]);
 
-        self::assertInstanceOf(Task::class, $client->tasks()->get('t1'));
-        self::assertInstanceOf(Task::class, $client->tasks()->find('t1'));
-        self::assertNull($client->tasks()->find('missing'));
+        self::assertInstanceOf(Task::class, $client->tasks()->get(Id::T1));
+        self::assertInstanceOf(Task::class, $client->tasks()->find(Id::T1));
+        self::assertNull($client->tasks()->find(Id::MISSING));
+    }
+
+    public function testGetWithEmptyIdIsRejectedBeforeSending(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        MockFactro::client([])->tasks()->get('');
     }
 
     public function testCreatePostsPayloadAndReturnsTask(): void
@@ -75,54 +82,54 @@ final class TasksTest extends TestCase
 
     public function testSetStateUsesStateEndpointAndAccepts204(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1/state' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1.'/state' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"state":"closed"}', $o['body']);
 
             return new MockResponse('', ['http_code' => 204]);
         }]);
 
-        $client->tasks()->setState('t1', TaskState::CLOSED);
+        $client->tasks()->setState(Id::T1, TaskState::CLOSED);
         $this->addToAssertionCount(1);
     }
 
     public function testSetStateWithPausedUntil(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1/state' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1.'/state' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"state":"pushedBack","pausedUntil":"2026-10-01T00:00:00.000Z"}', $o['body']);
 
             return new MockResponse('', ['http_code' => 204]);
         }]);
 
-        $client->tasks()->setState('t1', TaskState::PUSHED_BACK, new \DateTimeImmutable('2026-10-01T00:00:00Z'));
+        $client->tasks()->setState(Id::T1, TaskState::PUSHED_BACK, new \DateTimeImmutable('2026-10-01T00:00:00Z'));
         $this->addToAssertionCount(1);
     }
 
     public function testUpdateSendsOnlyChangedFields(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1 => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"description":"<p>x</p>"}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('task'));
         }]);
 
-        self::assertInstanceOf(Task::class, $client->tasks()->update('t1', new TaskChanges(description: '<p>x</p>')));
+        self::assertInstanceOf(Task::class, $client->tasks()->update(Id::T1, new TaskChanges(description: '<p>x</p>')));
     }
 
     public function testUpdateWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->tasks()->update('t1', new TaskChanges());
+        MockFactro::client([])->tasks()->update(Id::T1, new TaskChanges());
     }
 
     public function testClosedTaskYieldsAuthenticationExceptionWithFactroMessage(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1' => static fn (): MockResponse => MockResponse::fromFile(Fixtures::path('errors/403-task-closed'), ['http_code' => 403])]);
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1 => static fn (): MockResponse => MockResponse::fromFile(Fixtures::path('errors/403-task-closed'), ['http_code' => 403])]);
 
         try {
-            $client->tasks()->update('t1', new TaskChanges(title: 'x'));
+            $client->tasks()->update(Id::T1, new TaskChanges(title: 'x'));
             self::fail('expected AuthenticationException');
         } catch (AuthenticationException $e) {
             self::assertSame('Task is closed', $e->getMessage());
@@ -132,9 +139,9 @@ final class TasksTest extends TestCase
 
     public function testDeleteAccepts204(): void
     {
-        $client = MockFactro::client(['DELETE /tasks/t1' => new MockResponse('', ['http_code' => 204])]);
+        $client = MockFactro::client(['DELETE /tasks/'.Id::T1 => new MockResponse('', ['http_code' => 204])]);
 
-        $client->tasks()->delete('t1');
+        $client->tasks()->delete(Id::T1);
         $this->addToAssertionCount(1);
     }
 
@@ -143,6 +150,6 @@ final class TasksTest extends TestCase
         $client = MockFactro::client([], new FactroOptions(baseUrl: MockFactro::BASE_URL, policy: RequestPolicy::withoutDeletes(), maxRetries: 0));
 
         $this->expectException(OperationNotPermittedException::class);
-        $client->tasks()->delete('t1');
+        $client->tasks()->delete(Id::T1);
     }
 }

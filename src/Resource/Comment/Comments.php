@@ -19,7 +19,7 @@ final class Comments extends AbstractResource
      */
     public function get(string $commentId): Comment
     {
-        return Comment::fromArray($this->object($this->transport->request('GET', '/comments/'.rawurlencode($commentId))));
+        return Comment::fromArray($this->object($this->transport->request('GET', '/comments/'.self::id($commentId))));
     }
 
     /**

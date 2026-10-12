@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\Note\Input\NewNoteComment;
 use Nxi\Factro\Resource\Note\Notes;
 use Nxi\Factro\Resource\Note\Output\NoteComment;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -20,14 +21,14 @@ final class NotesTest extends TestCase
 {
     public function testCommentsUsesSingularNotePath(): void
     {
-        $client = MockFactro::client(['GET /note/n1/comments' => static function (string $m, string $u): MockResponse {
+        $client = MockFactro::client(['GET /note/'.Id::N1.'/comments' => static function (string $m, string $u): MockResponse {
             self::assertSame('GET', $m);
-            self::assertSame(MockFactro::BASE_URL.'/note/n1/comments', $u);
+            self::assertSame(MockFactro::BASE_URL.'/note/'.Id::N1.'/comments', $u);
 
             return JsonMockResponse::fromFile(Fixtures::path('note-comments'));
         }]);
 
-        $comments = $client->notes()->comments('n1');
+        $comments = $client->notes()->comments(Id::N1);
 
         self::assertCount(2, $comments);
         self::assertContainsOnlyInstancesOf(NoteComment::class, $comments);
@@ -38,34 +39,34 @@ final class NotesTest extends TestCase
         $first = Fixtures::json('note-comments')[0];
         self::assertIsArray($first);
         $client = MockFactro::client([
-            'GET /note/n1/comments/c1' => static function (string $m, string $u) use ($first): MockResponse {
-                self::assertSame(MockFactro::BASE_URL.'/note/n1/comments/c1', $u);
+            'GET /note/'.Id::N1.'/comments/'.Id::C1 => static function (string $m, string $u) use ($first): MockResponse {
+                self::assertSame(MockFactro::BASE_URL.'/note/'.Id::N1.'/comments/'.Id::C1, $u);
 
                 return new JsonMockResponse($first);
             },
-            'GET /note/n1/comments/missing' => new MockResponse('not found', ['http_code' => 404]),
+            'GET /note/'.Id::N1.'/comments/'.Id::MISSING => new MockResponse('not found', ['http_code' => 404]),
         ]);
 
-        self::assertSame($first['id'], $client->notes()->comment('n1', 'c1')->id);
+        self::assertSame($first['id'], $client->notes()->comment(Id::N1, Id::C1)->id);
 
         $this->expectException(NotFoundException::class);
-        $client->notes()->comment('n1', 'missing');
+        $client->notes()->comment(Id::N1, Id::MISSING);
     }
 
     public function testAddCommentPostsPayload(): void
     {
         $first = Fixtures::json('note-comments')[0];
         self::assertIsArray($first);
-        $client = MockFactro::client(['POST /note/n1/comments' => static function (string $m, string $u, array $o) use ($first): MockResponse {
+        $client = MockFactro::client(['POST /note/'.Id::N1.'/comments' => static function (string $m, string $u, array $o) use ($first): MockResponse {
             self::assertSame('POST', $m);
-            self::assertSame(MockFactro::BASE_URL.'/note/n1/comments', $u);
+            self::assertSame(MockFactro::BASE_URL.'/note/'.Id::N1.'/comments', $u);
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"text":"<p>Hi</p>"}', $o['body']);
 
             return new JsonMockResponse($first);
         }]);
 
-        $added = $client->notes()->addComment('n1', new NewNoteComment('<p>Hi</p>'));
+        $added = $client->notes()->addComment(Id::N1, new NewNoteComment('<p>Hi</p>'));
 
         self::assertSame($first['id'], $added->id);
     }

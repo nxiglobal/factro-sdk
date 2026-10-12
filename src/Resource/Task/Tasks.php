@@ -32,7 +32,7 @@ final class Tasks extends AbstractResource
      */
     public function listByProject(string $projectId): array
     {
-        return array_map(Task::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/by-project/'.rawurlencode($projectId))));
+        return array_map(Task::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/by-project/'.self::id($projectId))));
     }
 
     /**
@@ -40,7 +40,7 @@ final class Tasks extends AbstractResource
      */
     public function get(string $taskId): Task
     {
-        return Task::fromArray($this->object($this->transport->request('GET', '/tasks/'.rawurlencode($taskId))));
+        return Task::fromArray($this->object($this->transport->request('GET', '/tasks/'.self::id($taskId))));
     }
 
     /**
@@ -74,7 +74,7 @@ final class Tasks extends AbstractResource
             throw new \InvalidArgumentException('TaskChanges must set at least one field.');
         }
 
-        return Task::fromArray($this->object($this->transport->request('PUT', '/tasks/'.rawurlencode($taskId), json: $changes->toPayload($this->options->timezone))));
+        return Task::fromArray($this->object($this->transport->request('PUT', '/tasks/'.self::id($taskId), json: $changes->toPayload($this->options->timezone))));
     }
 
     /**
@@ -129,7 +129,7 @@ final class Tasks extends AbstractResource
         if (null !== $pausedUntil) {
             $payload['pausedUntil'] = FactroDateTime::toIsoUtc($pausedUntil);
         }
-        $this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/state', json: $payload);
+        $this->transport->request('PUT', '/tasks/'.self::id($taskId).'/state', json: $payload);
     }
 
     /**
@@ -137,7 +137,7 @@ final class Tasks extends AbstractResource
      */
     public function delete(string $taskId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId));
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId));
     }
 
     /**
@@ -147,7 +147,7 @@ final class Tasks extends AbstractResource
      */
     public function comments(string $taskId): array
     {
-        return array_map(TaskComment::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.rawurlencode($taskId).'/comments')));
+        return array_map(TaskComment::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.self::id($taskId).'/comments')));
     }
 
     /**
@@ -155,7 +155,7 @@ final class Tasks extends AbstractResource
      */
     public function addComment(string $taskId, NewTaskComment $comment): TaskComment
     {
-        return TaskComment::fromArray($this->object($this->transport->request('POST', '/tasks/'.rawurlencode($taskId).'/comments', json: $comment->toPayload())));
+        return TaskComment::fromArray($this->object($this->transport->request('POST', '/tasks/'.self::id($taskId).'/comments', json: $comment->toPayload())));
     }
 
     /**
@@ -163,7 +163,7 @@ final class Tasks extends AbstractResource
      */
     public function comment(string $taskId, string $commentId): TaskComment
     {
-        return TaskComment::fromArray($this->object($this->transport->request('GET', '/tasks/'.rawurlencode($taskId).'/comments/'.rawurlencode($commentId))));
+        return TaskComment::fromArray($this->object($this->transport->request('GET', '/tasks/'.self::id($taskId).'/comments/'.self::id($commentId))));
     }
 
     /**
@@ -171,7 +171,7 @@ final class Tasks extends AbstractResource
      */
     public function deleteComment(string $taskId, string $commentId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/comments/'.rawurlencode($commentId));
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/comments/'.self::id($commentId));
     }
 
     /**
@@ -181,7 +181,7 @@ final class Tasks extends AbstractResource
      */
     public function checklist(string $taskId): array
     {
-        return array_map(ChecklistEntry::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.rawurlencode($taskId).'/checklist')));
+        return array_map(ChecklistEntry::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.self::id($taskId).'/checklist')));
     }
 
     /**
@@ -189,7 +189,7 @@ final class Tasks extends AbstractResource
      */
     public function addChecklistEntry(string $taskId, NewChecklistEntry $entry): ChecklistEntry
     {
-        return ChecklistEntry::fromArray($this->object($this->transport->request('POST', '/tasks/'.rawurlencode($taskId).'/checklist', json: $entry->toPayload())));
+        return ChecklistEntry::fromArray($this->object($this->transport->request('POST', '/tasks/'.self::id($taskId).'/checklist', json: $entry->toPayload())));
     }
 
     /**
@@ -201,7 +201,7 @@ final class Tasks extends AbstractResource
             throw new \InvalidArgumentException('ChecklistEntryChanges must set at least one field.');
         }
 
-        return ChecklistEntry::fromArray($this->object($this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/checklist/'.rawurlencode($entryId), json: $changes->toPayload($this->options->timezone))));
+        return ChecklistEntry::fromArray($this->object($this->transport->request('PUT', '/tasks/'.self::id($taskId).'/checklist/'.self::id($entryId), json: $changes->toPayload($this->options->timezone))));
     }
 
     /**
@@ -209,7 +209,7 @@ final class Tasks extends AbstractResource
      */
     public function removeChecklistEntry(string $taskId, string $entryId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/checklist/'.rawurlencode($entryId));
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/checklist/'.self::id($entryId));
     }
 
     /**
@@ -235,7 +235,7 @@ final class Tasks extends AbstractResource
      */
     public function deleteTaskTag(string $tagId): void
     {
-        $this->transport->request('DELETE', '/tasks/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/tasks/tags/'.self::id($tagId));
     }
 
     /**
@@ -245,7 +245,7 @@ final class Tasks extends AbstractResource
      */
     public function tags(string $taskId): array
     {
-        return array_map(TaskTag::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.rawurlencode($taskId).'/tags')));
+        return array_map(TaskTag::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.self::id($taskId).'/tags')));
     }
 
     /**
@@ -253,7 +253,7 @@ final class Tasks extends AbstractResource
      */
     public function addTag(string $taskId, string $tagId): void
     {
-        $this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/tags', json: ['tagId' => $tagId]);
+        $this->transport->request('PUT', '/tasks/'.self::id($taskId).'/tags', json: ['tagId' => $tagId]);
     }
 
     /**
@@ -261,7 +261,7 @@ final class Tasks extends AbstractResource
      */
     public function removeTag(string $taskId, string $tagId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/tags/'.self::id($tagId));
     }
 
     /**
@@ -271,7 +271,7 @@ final class Tasks extends AbstractResource
      */
     public function connections(string $taskId): array
     {
-        return array_map(TaskConnection::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.rawurlencode($taskId).'/task_connections')));
+        return array_map(TaskConnection::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.self::id($taskId).'/task_connections')));
     }
 
     /**
@@ -279,7 +279,7 @@ final class Tasks extends AbstractResource
      */
     public function addConnection(string $taskId, TaskConnectionInput $connection): void
     {
-        $this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/task_connections', json: $connection->toPayload());
+        $this->transport->request('PUT', '/tasks/'.self::id($taskId).'/task_connections', json: $connection->toPayload());
     }
 
     /**
@@ -287,7 +287,7 @@ final class Tasks extends AbstractResource
      */
     public function removeConnection(string $taskId, string $connectedTaskId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/task_connections/'.rawurlencode($connectedTaskId));
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/task_connections/'.self::id($connectedTaskId));
     }
 
     /**
@@ -295,7 +295,7 @@ final class Tasks extends AbstractResource
      */
     public function moveToProject(string $taskId, string $projectId, ?int $position = null): void
     {
-        $this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/project', json: Payload::withoutNulls(['projectId' => $projectId, 'position' => $position]));
+        $this->transport->request('PUT', '/tasks/'.self::id($taskId).'/project', json: Payload::withoutNulls(['projectId' => $projectId, 'position' => $position]));
     }
 
     /**
@@ -303,7 +303,7 @@ final class Tasks extends AbstractResource
      */
     public function removeFromProject(string $taskId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/project');
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/project');
     }
 
     /**
@@ -311,7 +311,7 @@ final class Tasks extends AbstractResource
      */
     public function moveToPackage(string $taskId, string $packageId, ?int $position = null): void
     {
-        $this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/package', json: Payload::withoutNulls(['packageId' => $packageId, 'position' => $position]));
+        $this->transport->request('PUT', '/tasks/'.self::id($taskId).'/package', json: Payload::withoutNulls(['packageId' => $packageId, 'position' => $position]));
     }
 
     /**
@@ -319,7 +319,7 @@ final class Tasks extends AbstractResource
      */
     public function removeFromPackage(string $taskId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/package');
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/package');
     }
 
     /**
@@ -327,7 +327,7 @@ final class Tasks extends AbstractResource
      */
     public function setCompany(string $taskId, string $companyId): void
     {
-        $this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/company', json: ['companyId' => $companyId]);
+        $this->transport->request('PUT', '/tasks/'.self::id($taskId).'/company', json: ['companyId' => $companyId]);
     }
 
     /**
@@ -335,7 +335,7 @@ final class Tasks extends AbstractResource
      */
     public function removeCompany(string $taskId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/company');
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/company');
     }
 
     /**
@@ -343,7 +343,7 @@ final class Tasks extends AbstractResource
      */
     public function setContact(string $taskId, string $contactId): void
     {
-        $this->transport->request('PUT', '/tasks/'.rawurlencode($taskId).'/contact', json: ['contactId' => $contactId]);
+        $this->transport->request('PUT', '/tasks/'.self::id($taskId).'/contact', json: ['contactId' => $contactId]);
     }
 
     /**
@@ -351,7 +351,7 @@ final class Tasks extends AbstractResource
      */
     public function removeContact(string $taskId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/contact');
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/contact');
     }
 
     /**
@@ -361,7 +361,7 @@ final class Tasks extends AbstractResource
      */
     public function documents(string $taskId): array
     {
-        return array_map(Document::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.rawurlencode($taskId).'/documents')));
+        return array_map(Document::fromArray(...), $this->rows($this->transport->request('GET', '/tasks/'.self::id($taskId).'/documents')));
     }
 
     /**
@@ -369,7 +369,7 @@ final class Tasks extends AbstractResource
      */
     public function addDocument(string $taskId, DocumentUpload $upload): Document
     {
-        return Document::fromArray($this->object($this->transport->request('POST', '/tasks/'.rawurlencode($taskId).'/documents', multipart: $upload->toMultipart())));
+        return Document::fromArray($this->object($this->transport->request('POST', '/tasks/'.self::id($taskId).'/documents', multipart: $upload->toMultipart())));
     }
 
     /**
@@ -377,7 +377,7 @@ final class Tasks extends AbstractResource
      */
     public function removeDocument(string $taskId, string $documentId): void
     {
-        $this->transport->request('DELETE', '/tasks/'.rawurlencode($taskId).'/documents/'.rawurlencode($documentId));
+        $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/documents/'.self::id($documentId));
     }
 
     /**
@@ -385,6 +385,6 @@ final class Tasks extends AbstractResource
      */
     public function accessRights(string $taskId): AccessRights
     {
-        return new AccessRights($this->transport, $this->options, '/tasks/'.rawurlencode($taskId), '/tasks/'.rawurlencode($taskId));
+        return new AccessRights($this->transport, $this->options, '/tasks/'.self::id($taskId), '/tasks/'.self::id($taskId));
     }
 }

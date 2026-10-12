@@ -7,6 +7,7 @@ namespace Nxi\Factro\Tests\Unit\Resource\Task;
 use Nxi\Factro\Resource\Task\Output\TaskTag;
 use Nxi\Factro\Resource\Task\Tasks;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -38,35 +39,35 @@ final class TasksTagsTest extends TestCase
 
                 return new JsonMockResponse($first);
             },
-            'DELETE /tasks/tags/tag1' => new JsonMockResponse($first),
+            'DELETE /tasks/tags/'.Id::TAG1 => new JsonMockResponse($first),
         ]);
 
         $tag = $client->tasks()->createTaskTag('Tag 10');
         self::assertSame($first['id'], $tag->id);
 
-        $client->tasks()->deleteTaskTag('tag1');
+        $client->tasks()->deleteTaskTag(Id::TAG1);
         $this->addToAssertionCount(1);
     }
 
     public function testTagsOfATaskAndAddAndRemove(): void
     {
         $client = MockFactro::client([
-            'GET /tasks/t1/tags' => JsonMockResponse::fromFile(Fixtures::path('task-tags')),
-            'PUT /tasks/t1/tags' => static function (string $m, string $u, array $o): MockResponse {
+            'GET /tasks/'.Id::T1.'/tags' => JsonMockResponse::fromFile(Fixtures::path('task-tags')),
+            'PUT /tasks/'.Id::T1.'/tags' => static function (string $m, string $u, array $o): MockResponse {
                 self::assertIsString($o['body']);
-                self::assertJsonStringEqualsJsonString('{"tagId":"tag1"}', $o['body']);
+                self::assertJsonStringEqualsJsonString('{"tagId":"'.Id::TAG1.'"}', $o['body']);
 
                 return new MockResponse('', ['http_code' => 204]);
             },
-            'DELETE /tasks/t1/tags/tag1' => new MockResponse('', ['http_code' => 204]),
+            'DELETE /tasks/'.Id::T1.'/tags/'.Id::TAG1 => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        $tags = $client->tasks()->tags('t1');
+        $tags = $client->tasks()->tags(Id::T1);
         self::assertCount(3, $tags);
         self::assertContainsOnlyInstancesOf(TaskTag::class, $tags);
 
-        $client->tasks()->addTag('t1', 'tag1');
-        $client->tasks()->removeTag('t1', 'tag1');
+        $client->tasks()->addTag(Id::T1, Id::TAG1);
+        $client->tasks()->removeTag(Id::T1, Id::TAG1);
         $this->addToAssertionCount(2);
     }
 }

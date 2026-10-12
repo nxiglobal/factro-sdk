@@ -28,7 +28,7 @@ final class Teams extends AbstractResource
      */
     public function get(string $teamId): Team
     {
-        return Team::fromArray($this->object($this->transport->request('GET', '/teams/'.rawurlencode($teamId))));
+        return Team::fromArray($this->object($this->transport->request('GET', '/teams/'.self::id($teamId))));
     }
 
     /**
@@ -60,7 +60,7 @@ final class Teams extends AbstractResource
             throw new \InvalidArgumentException('TeamChanges must set at least one field.');
         }
 
-        return Team::fromArray($this->object($this->transport->request('PUT', '/teams/'.rawurlencode($teamId), json: $changes->toPayload())));
+        return Team::fromArray($this->object($this->transport->request('PUT', '/teams/'.self::id($teamId), json: $changes->toPayload())));
     }
 
     /**
@@ -68,7 +68,7 @@ final class Teams extends AbstractResource
      */
     public function delete(string $teamId): void
     {
-        $this->transport->request('DELETE', '/teams/'.rawurlencode($teamId));
+        $this->transport->request('DELETE', '/teams/'.self::id($teamId));
     }
 
     /**
@@ -78,7 +78,7 @@ final class Teams extends AbstractResource
      */
     public function members(string $teamId): array
     {
-        return array_map(TeamMember::fromArray(...), $this->rows($this->transport->request('GET', '/teams/'.rawurlencode($teamId).'/members')));
+        return array_map(TeamMember::fromArray(...), $this->rows($this->transport->request('GET', '/teams/'.self::id($teamId).'/members')));
     }
 
     /**
@@ -86,7 +86,7 @@ final class Teams extends AbstractResource
      */
     public function addMember(string $teamId, string $employeeId): TeamMember
     {
-        return TeamMember::fromArray($this->object($this->transport->request('PUT', '/teams/'.rawurlencode($teamId).'/members', json: ['employeeId' => $employeeId])));
+        return TeamMember::fromArray($this->object($this->transport->request('PUT', '/teams/'.self::id($teamId).'/members', json: ['employeeId' => $employeeId])));
     }
 
     /**
@@ -94,6 +94,6 @@ final class Teams extends AbstractResource
      */
     public function removeMember(string $teamId, string $teamMemberId): void
     {
-        $this->transport->request('DELETE', '/teams/'.rawurlencode($teamId).'/members/'.rawurlencode($teamMemberId));
+        $this->transport->request('DELETE', '/teams/'.self::id($teamId).'/members/'.self::id($teamMemberId));
     }
 }

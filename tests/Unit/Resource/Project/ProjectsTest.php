@@ -15,6 +15,7 @@ use Nxi\Factro\Resource\Project\Output\Project;
 use Nxi\Factro\Resource\Project\Projects;
 use Nxi\Factro\Resource\Project\ProjectState;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -38,41 +39,41 @@ final class ProjectsTest extends TestCase
     public function testGetAndFind(): void
     {
         $client = MockFactro::client([
-            'GET /projects/p1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('project')),
-            'GET /projects/missing' => static fn (): MockResponse => new MockResponse('Project with id "missing" not found', ['http_code' => 404]),
+            'GET /projects/'.Id::P1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('project')),
+            'GET /projects/'.Id::MISSING => static fn (): MockResponse => new MockResponse('Project with id "missing" not found', ['http_code' => 404]),
         ]);
 
-        self::assertInstanceOf(Project::class, $client->projects()->get('p1'));
-        self::assertInstanceOf(Project::class, $client->projects()->find('p1'));
-        self::assertNull($client->projects()->find('missing'));
+        self::assertInstanceOf(Project::class, $client->projects()->get(Id::P1));
+        self::assertInstanceOf(Project::class, $client->projects()->find(Id::P1));
+        self::assertNull($client->projects()->find(Id::MISSING));
         $this->expectException(NotFoundException::class);
-        $client->projects()->get('missing');
+        $client->projects()->get(Id::MISSING);
     }
 
     public function testFindOnlySwallowsNotFound(): void
     {
-        $client = MockFactro::client(['GET /projects/p1' => new MockResponse('', ['http_code' => 500])]);
+        $client = MockFactro::client(['GET /projects/'.Id::P1 => new MockResponse('', ['http_code' => 500])]);
 
         $this->expectException(ServerException::class);
-        $client->projects()->find('p1');
+        $client->projects()->find(Id::P1);
     }
 
-    public function testUpdateSendsPartialPayloadAndEncodesId(): void
+    public function testUpdateSendsPartialPayload(): void
     {
-        $client = MockFactro::client(['PUT /projects/p%2F1' => static function (string $method, string $url, array $options): MockResponse {
+        $client = MockFactro::client(['PUT /projects/'.Id::P1 => static function (string $method, string $url, array $options): MockResponse {
             self::assertIsString($options['body']);
             self::assertJsonStringEqualsJsonString('{"title":"New"}', $options['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('project'));
         }]);
 
-        self::assertInstanceOf(Project::class, $client->projects()->update('p/1', new ProjectChanges(title: 'New')));
+        self::assertInstanceOf(Project::class, $client->projects()->update(Id::P1, new ProjectChanges(title: 'New')));
     }
 
     public function testUpdateWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->projects()->update('p1', new ProjectChanges());
+        MockFactro::client([])->projects()->update(Id::P1, new ProjectChanges());
     }
 
     public function testCreatePostsPayloadAndReturnsProject(): void
@@ -91,9 +92,9 @@ final class ProjectsTest extends TestCase
 
     public function testDeleteDiscardsTheResponse(): void
     {
-        $client = MockFactro::client(['DELETE /projects/p%2F1' => JsonMockResponse::fromFile(Fixtures::path('project'))]);
+        $client = MockFactro::client(['DELETE /projects/'.Id::P1 => JsonMockResponse::fromFile(Fixtures::path('project'))]);
 
-        $client->projects()->delete('p/1');
+        $client->projects()->delete(Id::P1);
         $this->addToAssertionCount(1);
     }
 
@@ -102,7 +103,7 @@ final class ProjectsTest extends TestCase
         $client = MockFactro::client([], new FactroOptions(baseUrl: MockFactro::BASE_URL, policy: RequestPolicy::withoutDeletes(), maxRetries: 0));
 
         $this->expectException(OperationNotPermittedException::class);
-        $client->projects()->delete('p1');
+        $client->projects()->delete(Id::P1);
     }
 
     public function testCreateManyPostsAListOfPayloads(): void
@@ -130,12 +131,12 @@ final class ProjectsTest extends TestCase
     {
         $client = MockFactro::client(['PUT /projects/projects' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
-            self::assertJsonStringEqualsJsonString('[{"id":"p1","title":"New"},{"id":"p2","projectState":"closed"}]', $o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"'.Id::P1.'","title":"New"},{"id":"p2","projectState":"closed"}]', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('projects'));
         }]);
 
-        $projects = $client->projects()->updateMany(['p1' => new ProjectChanges(title: 'New'), 'p2' => new ProjectChanges(projectState: ProjectState::CLOSED)]);
+        $projects = $client->projects()->updateMany([Id::P1 => new ProjectChanges(title: 'New'), 'p2' => new ProjectChanges(projectState: ProjectState::CLOSED)]);
 
         self::assertCount(3, $projects);
         self::assertContainsOnlyInstancesOf(Project::class, $projects);
@@ -150,6 +151,6 @@ final class ProjectsTest extends TestCase
     public function testUpdateManyRejectsAnEmptyChangeSet(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->projects()->updateMany(['p1' => new ProjectChanges()]);
+        MockFactro::client([])->projects()->updateMany([Id::P1 => new ProjectChanges()]);
     }
 }

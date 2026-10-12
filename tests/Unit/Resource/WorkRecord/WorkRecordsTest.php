@@ -13,6 +13,7 @@ use Nxi\Factro\Resource\WorkRecord\Output\WorkRecord;
 use Nxi\Factro\Resource\WorkRecord\WorkRecordReferenceType;
 use Nxi\Factro\Resource\WorkRecord\WorkRecords;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -49,25 +50,25 @@ final class WorkRecordsTest extends TestCase
 
     public function testListByProjectWithFromOnly(): void
     {
-        $client = MockFactro::client(['GET /work-records/by-project/p1' => static function (string $m, string $url): MockResponse {
-            self::assertSame(MockFactro::BASE_URL.'/work-records/by-project/p1?startDate=2026-01-01', $url);
+        $client = MockFactro::client(['GET /work-records/by-project/'.Id::P1 => static function (string $m, string $url): MockResponse {
+            self::assertSame(MockFactro::BASE_URL.'/work-records/by-project/'.Id::P1.'?startDate=2026-01-01', $url);
 
             return JsonMockResponse::fromFile(Fixtures::path('work-records-by-project'));
         }]);
 
-        self::assertCount(3, $client->workRecords()->listByProject('p1', CalendarDate::fromYmd('2026-01-01')));
+        self::assertCount(3, $client->workRecords()->listByProject(Id::P1, CalendarDate::fromYmd('2026-01-01')));
     }
 
     public function testGetAndFind(): void
     {
         $client = MockFactro::client([
-            'GET /work-records/w1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('work-record')),
-            'GET /work-records/missing' => new MockResponse('not found', ['http_code' => 404]),
+            'GET /work-records/'.Id::W1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('work-record')),
+            'GET /work-records/'.Id::MISSING => new MockResponse('not found', ['http_code' => 404]),
         ]);
 
-        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->get('w1'));
-        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->find('w1'));
-        self::assertNull($client->workRecords()->find('missing'));
+        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->get(Id::W1));
+        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->find(Id::W1));
+        self::assertNull($client->workRecords()->find(Id::MISSING));
     }
 
     public function testCreateUpdateDelete(): void
@@ -75,29 +76,29 @@ final class WorkRecordsTest extends TestCase
         $client = MockFactro::client([
             'POST /work-records' => static function (string $m, string $u, array $o): MockResponse {
                 self::assertIsString($o['body']);
-                self::assertJsonStringEqualsJsonString('{"startDate":"2026-09-01","minutesWorked":60,"utcOffset":120,"bookedOnReferenceId":"t1","bookedOnReferenceType":"task"}', $o['body']);
+                self::assertJsonStringEqualsJsonString('{"startDate":"2026-09-01","minutesWorked":60,"utcOffset":120,"bookedOnReferenceId":"'.Id::T1.'","bookedOnReferenceType":"task"}', $o['body']);
 
                 return JsonMockResponse::fromFile(Fixtures::path('work-record'));
             },
-            'PUT /work-records/w1' => static function (string $m, string $u, array $o): MockResponse {
+            'PUT /work-records/'.Id::W1 => static function (string $m, string $u, array $o): MockResponse {
                 self::assertIsString($o['body']);
                 self::assertJsonStringEqualsJsonString('{"minutesWorked":45}', $o['body']);
 
                 return JsonMockResponse::fromFile(Fixtures::path('work-record'));
             },
-            'DELETE /work-records/w1' => new MockResponse('', ['http_code' => 204]),
+            'DELETE /work-records/'.Id::W1 => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->create(new NewWorkRecord(CalendarDate::fromYmd('2026-09-01'), 60, 120, 't1', WorkRecordReferenceType::TASK)));
-        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->update('w1', new WorkRecordChanges(minutesWorked: 45)));
-        $client->workRecords()->delete('w1');
+        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->create(new NewWorkRecord(CalendarDate::fromYmd('2026-09-01'), 60, 120, Id::T1, WorkRecordReferenceType::TASK)));
+        self::assertInstanceOf(WorkRecord::class, $client->workRecords()->update(Id::W1, new WorkRecordChanges(minutesWorked: 45)));
+        $client->workRecords()->delete(Id::W1);
         $this->addToAssertionCount(1);
     }
 
     public function testUpdateWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->workRecords()->update('w1', new WorkRecordChanges());
+        MockFactro::client([])->workRecords()->update(Id::W1, new WorkRecordChanges());
     }
 
     public function testDeleteIsBlockedByPolicy(): void
@@ -105,6 +106,6 @@ final class WorkRecordsTest extends TestCase
         $client = MockFactro::client([], new FactroOptions(baseUrl: MockFactro::BASE_URL, policy: RequestPolicy::withoutDeletes(), maxRetries: 0));
 
         $this->expectException(OperationNotPermittedException::class);
-        $client->workRecords()->delete('w1');
+        $client->workRecords()->delete(Id::W1);
     }
 }

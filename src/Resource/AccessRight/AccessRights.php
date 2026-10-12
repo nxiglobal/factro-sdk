@@ -70,7 +70,7 @@ final class AccessRights extends AbstractResource
      */
     public function revokeRead(string $employeeId): void
     {
-        $this->transport->request('DELETE', $this->employeePath.'/read_rights/'.rawurlencode($employeeId));
+        $this->transport->request('DELETE', $this->employeePath.'/read_rights/'.self::id($employeeId));
     }
 
     /**
@@ -88,7 +88,7 @@ final class AccessRights extends AbstractResource
      */
     public function revokeWrite(string $employeeId): void
     {
-        $this->transport->request('DELETE', $this->employeePath.'/write_rights/'.rawurlencode($employeeId));
+        $this->transport->request('DELETE', $this->employeePath.'/write_rights/'.self::id($employeeId));
     }
 
     /**
@@ -104,7 +104,7 @@ final class AccessRights extends AbstractResource
      */
     public function revokeTeamRead(string $teamId): void
     {
-        $this->transport->request('DELETE', $this->teamPath.'/team_read_rights/'.rawurlencode($teamId));
+        $this->transport->request('DELETE', $this->teamPath.'/team_read_rights/'.self::id($teamId));
     }
 
     /**
@@ -120,7 +120,7 @@ final class AccessRights extends AbstractResource
      */
     public function revokeTeamWrite(string $teamId): void
     {
-        $this->transport->request('DELETE', $this->teamPath.'/team_write_rights/'.rawurlencode($teamId));
+        $this->transport->request('DELETE', $this->teamPath.'/team_write_rights/'.self::id($teamId));
     }
 
     /**

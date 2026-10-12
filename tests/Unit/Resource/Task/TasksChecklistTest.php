@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\Task\Input\NewChecklistEntry;
 use Nxi\Factro\Resource\Task\Output\ChecklistEntry;
 use Nxi\Factro\Resource\Task\Tasks;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -21,9 +22,9 @@ final class TasksChecklistTest extends TestCase
 {
     public function testChecklistHydratesFixture(): void
     {
-        $client = MockFactro::client(['GET /tasks/t1/checklist' => JsonMockResponse::fromFile(Fixtures::path('checklist'))]);
+        $client = MockFactro::client(['GET /tasks/'.Id::T1.'/checklist' => JsonMockResponse::fromFile(Fixtures::path('checklist'))]);
 
-        $entries = $client->tasks()->checklist('t1');
+        $entries = $client->tasks()->checklist(Id::T1);
 
         self::assertCount(3, $entries);
         self::assertContainsOnlyInstancesOf(ChecklistEntry::class, $entries);
@@ -34,14 +35,14 @@ final class TasksChecklistTest extends TestCase
     {
         $first = Fixtures::json('checklist')[0];
         self::assertIsArray($first);
-        $client = MockFactro::client(['POST /tasks/t1/checklist' => static function (string $m, string $u, array $o) use ($first): MockResponse {
+        $client = MockFactro::client(['POST /tasks/'.Id::T1.'/checklist' => static function (string $m, string $u, array $o) use ($first): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"title":"Title 40","checked":false}', $o['body']);
 
             return new JsonMockResponse($first);
         }]);
 
-        $entry = $client->tasks()->addChecklistEntry('t1', new NewChecklistEntry('Title 40'));
+        $entry = $client->tasks()->addChecklistEntry(Id::T1, new NewChecklistEntry('Title 40'));
 
         self::assertSame($first['id'], $entry->id);
     }
@@ -50,14 +51,14 @@ final class TasksChecklistTest extends TestCase
     {
         $first = Fixtures::json('checklist')[0];
         self::assertIsArray($first);
-        $client = MockFactro::client(['PUT /tasks/t1/checklist/c1' => static function (string $m, string $u, array $o) use ($first): MockResponse {
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1.'/checklist/'.Id::C1 => static function (string $m, string $u, array $o) use ($first): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"checked":true,"endDate":"2026-09-14T22:00:00.000Z"}', $o['body']);
 
             return new JsonMockResponse($first);
         }]);
 
-        $entry = $client->tasks()->updateChecklistEntry('t1', 'c1', new ChecklistEntryChanges(checked: true, endDate: CalendarDate::fromYmd('2026-09-15')));
+        $entry = $client->tasks()->updateChecklistEntry(Id::T1, Id::C1, new ChecklistEntryChanges(checked: true, endDate: CalendarDate::fromYmd('2026-09-15')));
 
         self::assertInstanceOf(ChecklistEntry::class, $entry);
     }
@@ -65,15 +66,15 @@ final class TasksChecklistTest extends TestCase
     public function testUpdateChecklistEntryWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->tasks()->updateChecklistEntry('t1', 'c1', new ChecklistEntryChanges());
+        MockFactro::client([])->tasks()->updateChecklistEntry(Id::T1, Id::C1, new ChecklistEntryChanges());
     }
 
     public function testRemoveChecklistEntryDiscardsTheResponse(): void
     {
         $first = Fixtures::json('checklist')[0];
-        $client = MockFactro::client(['DELETE /tasks/t1/checklist/c1' => new JsonMockResponse($first)]);
+        $client = MockFactro::client(['DELETE /tasks/'.Id::T1.'/checklist/'.Id::C1 => new JsonMockResponse($first)]);
 
-        $client->tasks()->removeChecklistEntry('t1', 'c1');
+        $client->tasks()->removeChecklistEntry(Id::T1, Id::C1);
         $this->addToAssertionCount(1);
     }
 }

@@ -29,7 +29,7 @@ final class CustomViews extends AbstractResource
      */
     public function listByReference(string $referenceId): array
     {
-        return array_map(CustomView::fromArray(...), $this->rows($this->transport->request('GET', '/custom-views/by-reference/'.rawurlencode($referenceId))));
+        return array_map(CustomView::fromArray(...), $this->rows($this->transport->request('GET', '/custom-views/by-reference/'.self::id($referenceId))));
     }
 
     /**
@@ -37,7 +37,7 @@ final class CustomViews extends AbstractResource
      */
     public function get(string $customViewId): CustomView
     {
-        return CustomView::fromArray($this->object($this->transport->request('GET', '/custom-views/'.rawurlencode($customViewId))));
+        return CustomView::fromArray($this->object($this->transport->request('GET', '/custom-views/'.self::id($customViewId))));
     }
 
     /**
@@ -67,7 +67,7 @@ final class CustomViews extends AbstractResource
     {
         return CustomView::fromArray($this->object($this->transport->request(
             'POST',
-            '/custom-views/template/'.rawurlencode($sourceTemplateId),
+            '/custom-views/template/'.self::id($sourceTemplateId),
             json: ['title' => $title, 'description' => $description],
         )));
     }
@@ -81,7 +81,7 @@ final class CustomViews extends AbstractResource
             throw new \InvalidArgumentException('CustomViewChanges must set at least one field.');
         }
 
-        return CustomView::fromArray($this->object($this->transport->request('PUT', '/custom-views/'.rawurlencode($customViewId), json: $changes->toPayload())));
+        return CustomView::fromArray($this->object($this->transport->request('PUT', '/custom-views/'.self::id($customViewId), json: $changes->toPayload())));
     }
 
     /**
@@ -89,7 +89,7 @@ final class CustomViews extends AbstractResource
      */
     public function delete(string $customViewId): void
     {
-        $this->transport->request('DELETE', '/custom-views/'.rawurlencode($customViewId));
+        $this->transport->request('DELETE', '/custom-views/'.self::id($customViewId));
     }
 
     /**
@@ -99,7 +99,7 @@ final class CustomViews extends AbstractResource
     {
         return CustomView::fromArray($this->object($this->transport->request(
             'PUT',
-            '/custom-views/'.rawurlencode($referenceId).'/'.rawurlencode($customViewId).'/position/'.$position,
+            '/custom-views/'.self::id($referenceId).'/'.self::id($customViewId).'/position/'.$position,
         )));
     }
 }

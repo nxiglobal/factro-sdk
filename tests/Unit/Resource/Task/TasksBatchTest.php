@@ -10,6 +10,7 @@ use Nxi\Factro\Resource\Task\Output\Task;
 use Nxi\Factro\Resource\Task\Tasks;
 use Nxi\Factro\Resource\Task\Urgency;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -54,14 +55,14 @@ final class TasksBatchTest extends TestCase
         $task = Fixtures::json('task');
         $client = MockFactro::client(['PUT /tasks/tasks' => static function (string $m, string $u, array $o) use ($task): MockResponse {
             self::assertIsString($o['body']);
-            self::assertJsonStringEqualsJsonString('[{"id":"t1","title":"New"},{"id":"t2","description":"<p>x</p>","urgency":"due"}]', $o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"'.Id::T1.'","title":"New"},{"id":"'.Id::T2.'","description":"<p>x</p>","urgency":"due"}]', $o['body']);
 
             return new JsonMockResponse([$task, $task]);
         }]);
 
         $tasks = $client->tasks()->updateMany([
-            't1' => new TaskChanges(title: 'New'),
-            't2' => new TaskChanges(description: '<p>x</p>', urgency: Urgency::DUE),
+            Id::T1 => new TaskChanges(title: 'New'),
+            Id::T2 => new TaskChanges(description: '<p>x</p>', urgency: Urgency::DUE),
         ]);
 
         self::assertCount(2, $tasks);
@@ -77,7 +78,7 @@ final class TasksBatchTest extends TestCase
     public function testUpdateManyWithAnEmptyChangeSetIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('t2');
-        MockFactro::client([])->tasks()->updateMany(['t1' => new TaskChanges(title: 'x'), 't2' => new TaskChanges()]);
+        $this->expectExceptionMessage(Id::T2);
+        MockFactro::client([])->tasks()->updateMany([Id::T1 => new TaskChanges(title: 'x'), Id::T2 => new TaskChanges()]);
     }
 }

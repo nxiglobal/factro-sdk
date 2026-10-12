@@ -13,6 +13,7 @@ use Nxi\Factro\Resource\Team\Output\Team;
 use Nxi\Factro\Resource\Team\Output\TeamMember;
 use Nxi\Factro\Resource\Team\Teams;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -26,16 +27,16 @@ final class TeamsTest extends TestCase
     {
         $client = MockFactro::client([
             'GET /teams' => JsonMockResponse::fromFile(Fixtures::path('teams')),
-            'GET /teams/tm1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('team')),
-            'GET /teams/missing' => new MockResponse('Team with id "missing" not found', ['http_code' => 404]),
+            'GET /teams/'.Id::TM1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('team')),
+            'GET /teams/'.Id::MISSING => new MockResponse('Team with id "missing" not found', ['http_code' => 404]),
         ]);
 
         $teams = $client->teams()->list();
         self::assertCount(3, $teams);
         self::assertContainsOnlyInstancesOf(Team::class, $teams);
-        self::assertInstanceOf(Team::class, $client->teams()->get('tm1'));
-        self::assertInstanceOf(Team::class, $client->teams()->find('tm1'));
-        self::assertNull($client->teams()->find('missing'));
+        self::assertInstanceOf(Team::class, $client->teams()->get(Id::TM1));
+        self::assertInstanceOf(Team::class, $client->teams()->find(Id::TM1));
+        self::assertNull($client->teams()->find(Id::MISSING));
     }
 
     public function testCreatePostsPayloadAndReturnsTeam(): void
@@ -52,27 +53,27 @@ final class TeamsTest extends TestCase
 
     public function testUpdateSendsOnlyChangedFields(): void
     {
-        $client = MockFactro::client(['PUT /teams/tm1' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /teams/'.Id::TM1 => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"isActive":false}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('team'));
         }]);
 
-        self::assertInstanceOf(Team::class, $client->teams()->update('tm1', new TeamChanges(isActive: false)));
+        self::assertInstanceOf(Team::class, $client->teams()->update(Id::TM1, new TeamChanges(isActive: false)));
     }
 
     public function testUpdateWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->teams()->update('tm1', new TeamChanges());
+        MockFactro::client([])->teams()->update(Id::TM1, new TeamChanges());
     }
 
     public function testDeleteDiscardsResponseBody(): void
     {
-        $client = MockFactro::client(['DELETE /teams/tm1' => JsonMockResponse::fromFile(Fixtures::path('team'))]);
+        $client = MockFactro::client(['DELETE /teams/'.Id::TM1 => JsonMockResponse::fromFile(Fixtures::path('team'))]);
 
-        $client->teams()->delete('tm1');
+        $client->teams()->delete(Id::TM1);
         $this->addToAssertionCount(1);
     }
 
@@ -81,14 +82,14 @@ final class TeamsTest extends TestCase
         $client = MockFactro::client([], new FactroOptions(baseUrl: MockFactro::BASE_URL, policy: RequestPolicy::withoutDeletes(), maxRetries: 0));
 
         $this->expectException(OperationNotPermittedException::class);
-        $client->teams()->delete('tm1');
+        $client->teams()->delete(Id::TM1);
     }
 
     public function testMembersUsesMembersEndpoint(): void
     {
-        $client = MockFactro::client(['GET /teams/tm1/members' => JsonMockResponse::fromFile(Fixtures::path('team-members'))]);
+        $client = MockFactro::client(['GET /teams/'.Id::TM1.'/members' => JsonMockResponse::fromFile(Fixtures::path('team-members'))]);
 
-        $members = $client->teams()->members('tm1');
+        $members = $client->teams()->members(Id::TM1);
 
         self::assertCount(2, $members);
         self::assertContainsOnlyInstancesOf(TeamMember::class, $members);
@@ -98,35 +99,35 @@ final class TeamsTest extends TestCase
 
     public function testAddMemberPutsEmployeeIdAndReturnsMember(): void
     {
-        $client = MockFactro::client(['PUT /teams/tm1/members' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /teams/'.Id::TM1.'/members' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
-            self::assertJsonStringEqualsJsonString('{"employeeId":"e1"}', $o['body']);
+            self::assertJsonStringEqualsJsonString('{"employeeId":"'.Id::E1.'"}', $o['body']);
 
             return new JsonMockResponse([
-                'id' => 'm1',
-                'teamId' => 'tm1',
-                'employeeId' => 'e1',
+                'id' => Id::M1,
+                'teamId' => Id::TM1,
+                'employeeId' => Id::E1,
                 'mandantId' => '9e30ce50-948c-50ae-9084-ffa402165b5b',
             ]);
         }]);
 
-        $member = $client->teams()->addMember('tm1', 'e1');
+        $member = $client->teams()->addMember(Id::TM1, Id::E1);
 
-        self::assertSame('m1', $member->id);
-        self::assertSame('tm1', $member->teamId);
-        self::assertSame('e1', $member->employeeId);
+        self::assertSame(Id::M1, $member->id);
+        self::assertSame(Id::TM1, $member->teamId);
+        self::assertSame(Id::E1, $member->employeeId);
     }
 
     public function testRemoveMemberDiscardsResponseBody(): void
     {
-        $client = MockFactro::client(['DELETE /teams/tm1/members/m1' => new JsonMockResponse([
-            'id' => 'm1',
-            'teamId' => 'tm1',
-            'employeeId' => 'e1',
+        $client = MockFactro::client(['DELETE /teams/'.Id::TM1.'/members/'.Id::M1 => new JsonMockResponse([
+            'id' => Id::M1,
+            'teamId' => Id::TM1,
+            'employeeId' => Id::E1,
             'mandantId' => '9e30ce50-948c-50ae-9084-ffa402165b5b',
         ])]);
 
-        $client->teams()->removeMember('tm1', 'm1');
+        $client->teams()->removeMember(Id::TM1, Id::M1);
         $this->addToAssertionCount(1);
     }
 
@@ -135,6 +136,6 @@ final class TeamsTest extends TestCase
         $client = MockFactro::client([], new FactroOptions(baseUrl: MockFactro::BASE_URL, policy: RequestPolicy::withoutDeletes(), maxRetries: 0));
 
         $this->expectException(OperationNotPermittedException::class);
-        $client->teams()->removeMember('tm1', 'm1');
+        $client->teams()->removeMember(Id::TM1, Id::M1);
     }
 }

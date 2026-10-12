@@ -10,6 +10,7 @@ use Nxi\Factro\Resource\WorkRecord\Output\WorkRecord;
 use Nxi\Factro\Resource\WorkRecord\WorkRecordReferenceType;
 use Nxi\Factro\Resource\WorkRecord\WorkRecords;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -27,8 +28,8 @@ final class WorkRecordsBatchTest extends TestCase
             self::assertSame(MockFactro::BASE_URL.'/work-records/work-records', $u);
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
-                '[{"startDate":"2026-09-01","minutesWorked":60,"utcOffset":120,"bookedOnReferenceId":"t1","bookedOnReferenceType":"task"},'
-                .'{"startDate":"2026-09-02","minutesWorked":30,"utcOffset":120,"bookedOnReferenceId":"p1","bookedOnReferenceType":"project","description":"x"}]',
+                '[{"startDate":"2026-09-01","minutesWorked":60,"utcOffset":120,"bookedOnReferenceId":"'.Id::T1.'","bookedOnReferenceType":"task"},'
+                .'{"startDate":"2026-09-02","minutesWorked":30,"utcOffset":120,"bookedOnReferenceId":"'.Id::P1.'","bookedOnReferenceType":"project","description":"x"}]',
                 $o['body'],
             );
 
@@ -36,8 +37,8 @@ final class WorkRecordsBatchTest extends TestCase
         }]);
 
         $records = $client->workRecords()->createMany([
-            new NewWorkRecord(CalendarDate::fromYmd('2026-09-01'), 60, 120, 't1', WorkRecordReferenceType::TASK),
-            new NewWorkRecord(CalendarDate::fromYmd('2026-09-02'), 30, 120, 'p1', WorkRecordReferenceType::PROJECT, description: 'x'),
+            new NewWorkRecord(CalendarDate::fromYmd('2026-09-01'), 60, 120, Id::T1, WorkRecordReferenceType::TASK),
+            new NewWorkRecord(CalendarDate::fromYmd('2026-09-02'), 30, 120, Id::P1, WorkRecordReferenceType::PROJECT, description: 'x'),
         ]);
 
         self::assertCount(3, $records);
@@ -56,13 +57,13 @@ final class WorkRecordsBatchTest extends TestCase
             self::assertSame('PUT', $m);
             self::assertSame(MockFactro::BASE_URL.'/work-records/work-records', $u);
             self::assertIsString($o['body']);
-            self::assertJsonStringEqualsJsonString('[{"id":"w1","minutesWorked":45},{"id":"w2","isBilled":true,"description":"y"}]', $o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"'.Id::W1.'","minutesWorked":45},{"id":"w2","isBilled":true,"description":"y"}]', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('work-records-by-project'));
         }]);
 
         $records = $client->workRecords()->updateMany([
-            'w1' => new WorkRecordChanges(minutesWorked: 45),
+            Id::W1 => new WorkRecordChanges(minutesWorked: 45),
             'w2' => new WorkRecordChanges(description: 'y', isBilled: true),
         ]);
 
@@ -79,6 +80,6 @@ final class WorkRecordsBatchTest extends TestCase
     public function testUpdateManyWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->workRecords()->updateMany(['w1' => new WorkRecordChanges()]);
+        MockFactro::client([])->workRecords()->updateMany([Id::W1 => new WorkRecordChanges()]);
     }
 }

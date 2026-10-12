@@ -27,7 +27,7 @@ final class Appointments extends AbstractResource
      */
     public function get(string $appointmentId): Appointment
     {
-        return Appointment::fromArray($this->object($this->transport->request('GET', '/appointments/'.rawurlencode($appointmentId))));
+        return Appointment::fromArray($this->object($this->transport->request('GET', '/appointments/'.self::id($appointmentId))));
     }
 
     /**
@@ -59,7 +59,7 @@ final class Appointments extends AbstractResource
             throw new \InvalidArgumentException('AppointmentChanges must set at least one field.');
         }
 
-        return Appointment::fromArray($this->object($this->transport->request('PUT', '/appointments/'.rawurlencode($appointmentId), json: $changes->toPayload())));
+        return Appointment::fromArray($this->object($this->transport->request('PUT', '/appointments/'.self::id($appointmentId), json: $changes->toPayload())));
     }
 
     /**
@@ -67,7 +67,7 @@ final class Appointments extends AbstractResource
      */
     public function delete(string $appointmentId): void
     {
-        $this->transport->request('DELETE', '/appointments/'.rawurlencode($appointmentId));
+        $this->transport->request('DELETE', '/appointments/'.self::id($appointmentId));
     }
 
     /**

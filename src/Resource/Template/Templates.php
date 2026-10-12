@@ -22,7 +22,7 @@ final class Templates extends AbstractResource
      */
     public function structureTemplateAccessRights(string $templateId): AccessRights
     {
-        $path = '/templates/structure/'.rawurlencode($templateId);
+        $path = '/templates/structure/'.self::id($templateId);
 
         return new AccessRights($this->transport, $this->options, $path, $path);
     }
@@ -32,7 +32,7 @@ final class Templates extends AbstractResource
      */
     public function taskTemplateAccessRights(string $templateId): AccessRights
     {
-        $path = '/templates/task/'.rawurlencode($templateId);
+        $path = '/templates/task/'.self::id($templateId);
 
         return new AccessRights($this->transport, $this->options, $path, $path);
     }
@@ -45,7 +45,7 @@ final class Templates extends AbstractResource
     {
         $payload = $this->asJsonObject($input->toPayload($this->options->timezone));
 
-        return Project::fromArray($this->object($this->transport->request('POST', '/templates/structure/'.rawurlencode($templateId).'/apply_template', json: $payload)));
+        return Project::fromArray($this->object($this->transport->request('POST', '/templates/structure/'.self::id($templateId).'/apply_template', json: $payload)));
     }
 
     /**
@@ -55,7 +55,7 @@ final class Templates extends AbstractResource
     {
         $payload = $this->asJsonObject(null === $targetParentId ? [] : ['targetParentId' => $targetParentId]);
 
-        return Task::fromArray($this->object($this->transport->request('POST', '/templates/task/'.rawurlencode($templateId).'/apply_template', json: $payload)));
+        return Task::fromArray($this->object($this->transport->request('POST', '/templates/task/'.self::id($templateId).'/apply_template', json: $payload)));
     }
 
     /**

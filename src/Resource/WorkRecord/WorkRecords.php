@@ -32,7 +32,7 @@ final class WorkRecords extends AbstractResource
      */
     public function listByProject(string $projectId, ?CalendarDate $from = null, ?CalendarDate $to = null): array
     {
-        return array_map(WorkRecord::fromArray(...), $this->rows($this->transport->request('GET', '/work-records/by-project/'.rawurlencode($projectId), $this->dateQuery($from, $to))));
+        return array_map(WorkRecord::fromArray(...), $this->rows($this->transport->request('GET', '/work-records/by-project/'.self::id($projectId), $this->dateQuery($from, $to))));
     }
 
     /**
@@ -40,7 +40,7 @@ final class WorkRecords extends AbstractResource
      */
     public function get(string $workRecordId): WorkRecord
     {
-        return WorkRecord::fromArray($this->object($this->transport->request('GET', '/work-records/'.rawurlencode($workRecordId))));
+        return WorkRecord::fromArray($this->object($this->transport->request('GET', '/work-records/'.self::id($workRecordId))));
     }
 
     /**
@@ -72,7 +72,7 @@ final class WorkRecords extends AbstractResource
             throw new \InvalidArgumentException('WorkRecordChanges must set at least one field.');
         }
 
-        return WorkRecord::fromArray($this->object($this->transport->request('PUT', '/work-records/'.rawurlencode($workRecordId), json: $changes->toPayload())));
+        return WorkRecord::fromArray($this->object($this->transport->request('PUT', '/work-records/'.self::id($workRecordId), json: $changes->toPayload())));
     }
 
     /**
@@ -121,7 +121,7 @@ final class WorkRecords extends AbstractResource
      */
     public function delete(string $workRecordId): void
     {
-        $this->transport->request('DELETE', '/work-records/'.rawurlencode($workRecordId));
+        $this->transport->request('DELETE', '/work-records/'.self::id($workRecordId));
     }
 
     /**
@@ -131,7 +131,7 @@ final class WorkRecords extends AbstractResource
      */
     public function comments(string $workRecordId): array
     {
-        return array_map(WorkRecordComment::fromArray(...), $this->rows($this->transport->request('GET', '/work-records/'.rawurlencode($workRecordId).'/comments')));
+        return array_map(WorkRecordComment::fromArray(...), $this->rows($this->transport->request('GET', '/work-records/'.self::id($workRecordId).'/comments')));
     }
 
     /**
@@ -139,7 +139,7 @@ final class WorkRecords extends AbstractResource
      */
     public function comment(string $workRecordId, string $commentId): WorkRecordComment
     {
-        return WorkRecordComment::fromArray($this->object($this->transport->request('GET', '/work-records/'.rawurlencode($workRecordId).'/comments/'.rawurlencode($commentId))));
+        return WorkRecordComment::fromArray($this->object($this->transport->request('GET', '/work-records/'.self::id($workRecordId).'/comments/'.self::id($commentId))));
     }
 
     /**
@@ -147,7 +147,7 @@ final class WorkRecords extends AbstractResource
      */
     public function addComment(string $workRecordId, NewWorkRecordComment $comment): WorkRecordComment
     {
-        return WorkRecordComment::fromArray($this->object($this->transport->request('POST', '/work-records/'.rawurlencode($workRecordId).'/comments', json: $comment->toPayload())));
+        return WorkRecordComment::fromArray($this->object($this->transport->request('POST', '/work-records/'.self::id($workRecordId).'/comments', json: $comment->toPayload())));
     }
 
     /**

@@ -8,6 +8,7 @@ use Nxi\Factro\Resource\User\Output\EmployeeTag;
 use Nxi\Factro\Resource\User\Output\User;
 use Nxi\Factro\Resource\User\Users;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -30,15 +31,15 @@ final class UsersTest extends TestCase
     public function testGetFindAndTags(): void
     {
         $client = MockFactro::client([
-            'GET /users/u1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('user')),
-            'GET /users/missing' => new MockResponse('User with id "missing" not found', ['http_code' => 404]),
-            'GET /users/u1/tags' => JsonMockResponse::fromFile(Fixtures::path('user-tags')),
+            'GET /users/'.Id::U1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('user')),
+            'GET /users/'.Id::MISSING => new MockResponse('User with id "missing" not found', ['http_code' => 404]),
+            'GET /users/'.Id::U1.'/tags' => JsonMockResponse::fromFile(Fixtures::path('user-tags')),
         ]);
 
-        self::assertInstanceOf(User::class, $client->users()->get('u1'));
-        self::assertInstanceOf(User::class, $client->users()->find('u1'));
-        self::assertNull($client->users()->find('missing'));
-        $tags = $client->users()->tags('u1');
+        self::assertInstanceOf(User::class, $client->users()->get(Id::U1));
+        self::assertInstanceOf(User::class, $client->users()->find(Id::U1));
+        self::assertNull($client->users()->find(Id::MISSING));
+        $tags = $client->users()->tags(Id::U1);
         self::assertCount(2, $tags);
         self::assertContainsOnlyInstancesOf(EmployeeTag::class, $tags);
     }
@@ -47,30 +48,30 @@ final class UsersTest extends TestCase
     {
         $calls = [];
         $client = MockFactro::client([
-            'GET /users/a/tags' => static function () use (&$calls): MockResponse {
+            'GET /users/'.Id::U1.'/tags' => static function () use (&$calls): MockResponse {
                 $calls[] = 'a';
 
                 return JsonMockResponse::fromFile(Fixtures::path('user-tags'));
             },
-            'GET /users/b/tags' => static function () use (&$calls): MockResponse {
+            'GET /users/'.Id::U2.'/tags' => static function () use (&$calls): MockResponse {
                 $calls[] = 'b';
 
                 return new JsonMockResponse([]);
             },
-            'GET /users/c/tags' => static function () use (&$calls): MockResponse {
+            'GET /users/'.Id::MISSING.'/tags' => static function () use (&$calls): MockResponse {
                 $calls[] = 'c';
 
                 return new MockResponse('not found', ['http_code' => 404]);
             },
         ]);
 
-        $result = $client->users()->tagsForMany(['a', 'b', 'c'], concurrency: 2);
+        $result = $client->users()->tagsForMany([Id::U1, Id::U2, Id::MISSING], concurrency: 2);
 
-        self::assertSame(['a', 'b', 'c'], array_keys($result));
-        self::assertContainsOnlyInstancesOf(EmployeeTag::class, $result['a']);
-        self::assertCount(2, $result['a']);
-        self::assertSame([], $result['b']);
-        self::assertSame([], $result['c']);
+        self::assertSame([Id::U1, Id::U2, Id::MISSING], array_keys($result));
+        self::assertContainsOnlyInstancesOf(EmployeeTag::class, $result[Id::U1]);
+        self::assertCount(2, $result[Id::U1]);
+        self::assertSame([], $result[Id::U2]);
+        self::assertSame([], $result[Id::MISSING]);
         self::assertCount(3, $calls);
     }
 
@@ -79,11 +80,10 @@ final class UsersTest extends TestCase
         self::assertSame([], MockFactro::client([])->users()->tagsForMany([]));
     }
 
-    public function testTagsForManyEncodesIds(): void
+    public function testTagsForManyRejectsNonUuidIdsBeforeSending(): void
     {
-        $client = MockFactro::client(['GET /users/a%2Fb/tags' => new JsonMockResponse([])]);
-
-        self::assertSame(['a/b' => []], $client->users()->tagsForMany(['a/b']));
+        $this->expectException(\InvalidArgumentException::class);
+        MockFactro::client([])->users()->tagsForMany([Id::U1, 'a/b']);
     }
 
     public function testEmployeeTagsEndpoint(): void

@@ -27,7 +27,7 @@ final class Contacts extends AbstractResource
      */
     public function get(string $contactId): Contact
     {
-        return Contact::fromArray($this->object($this->transport->request('GET', '/contacts/'.rawurlencode($contactId))));
+        return Contact::fromArray($this->object($this->transport->request('GET', '/contacts/'.self::id($contactId))));
     }
 
     /**
@@ -59,7 +59,7 @@ final class Contacts extends AbstractResource
             throw new \InvalidArgumentException('ContactChanges must set at least one field.');
         }
 
-        return Contact::fromArray($this->object($this->transport->request('PUT', '/contacts/'.rawurlencode($contactId), json: $changes->toPayload())));
+        return Contact::fromArray($this->object($this->transport->request('PUT', '/contacts/'.self::id($contactId), json: $changes->toPayload())));
     }
 
     /**
@@ -67,7 +67,7 @@ final class Contacts extends AbstractResource
      */
     public function delete(string $contactId): void
     {
-        $this->transport->request('DELETE', '/contacts/'.rawurlencode($contactId));
+        $this->transport->request('DELETE', '/contacts/'.self::id($contactId));
     }
 
     /**

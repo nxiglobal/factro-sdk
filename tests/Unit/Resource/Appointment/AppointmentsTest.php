@@ -12,6 +12,7 @@ use Nxi\Factro\Resource\Appointment\Input\AppointmentChanges;
 use Nxi\Factro\Resource\Appointment\Input\NewAppointment;
 use Nxi\Factro\Resource\Appointment\Output\Appointment;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -25,16 +26,16 @@ final class AppointmentsTest extends TestCase
     {
         $client = MockFactro::client([
             'GET /appointments' => JsonMockResponse::fromFile(Fixtures::path('appointments')),
-            'GET /appointments/a1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('appointment')),
-            'GET /appointments/missing' => new MockResponse('Appointment with id "missing" not found', ['http_code' => 404]),
+            'GET /appointments/'.Id::A1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('appointment')),
+            'GET /appointments/'.Id::MISSING => new MockResponse('Appointment with id "missing" not found', ['http_code' => 404]),
         ]);
 
         $appointments = $client->appointments()->list();
         self::assertCount(3, $appointments);
         self::assertContainsOnlyInstancesOf(Appointment::class, $appointments);
-        self::assertInstanceOf(Appointment::class, $client->appointments()->get('a1'));
-        self::assertInstanceOf(Appointment::class, $client->appointments()->find('a1'));
-        self::assertNull($client->appointments()->find('missing'));
+        self::assertInstanceOf(Appointment::class, $client->appointments()->get(Id::A1));
+        self::assertInstanceOf(Appointment::class, $client->appointments()->find(Id::A1));
+        self::assertNull($client->appointments()->find(Id::MISSING));
     }
 
     public function testCreatePostsPayloadAndReturnsAppointment(): void
@@ -42,7 +43,7 @@ final class AppointmentsTest extends TestCase
         $client = MockFactro::client(['POST /appointments' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
-                '{"employeeId":"e1","startDate":"2026-09-15T08:00:00.000Z","endDate":"2026-09-15T09:30:00.000Z","subject":"Meeting"}',
+                '{"employeeId":"'.Id::E1.'","startDate":"2026-09-15T08:00:00.000Z","endDate":"2026-09-15T09:30:00.000Z","subject":"Meeting"}',
                 $o['body'],
             );
 
@@ -50,7 +51,7 @@ final class AppointmentsTest extends TestCase
         }]);
 
         $appointment = $client->appointments()->create(new NewAppointment(
-            employeeId: 'e1',
+            employeeId: Id::E1,
             startDate: new \DateTimeImmutable('2026-09-15T10:00:00+02:00'),
             endDate: new \DateTimeImmutable('2026-09-15T11:30:00+02:00'),
             subject: 'Meeting',
@@ -61,27 +62,27 @@ final class AppointmentsTest extends TestCase
 
     public function testUpdateSendsOnlyChangedFields(): void
     {
-        $client = MockFactro::client(['PUT /appointments/a1' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /appointments/'.Id::A1 => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"location":"Berlin","distance":42.5}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('appointment'));
         }]);
 
-        self::assertInstanceOf(Appointment::class, $client->appointments()->update('a1', new AppointmentChanges(location: 'Berlin', distance: 42.5)));
+        self::assertInstanceOf(Appointment::class, $client->appointments()->update(Id::A1, new AppointmentChanges(location: 'Berlin', distance: 42.5)));
     }
 
     public function testUpdateWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->appointments()->update('a1', new AppointmentChanges());
+        MockFactro::client([])->appointments()->update(Id::A1, new AppointmentChanges());
     }
 
     public function testDeleteDiscardsResponseBody(): void
     {
-        $client = MockFactro::client(['DELETE /appointments/a1' => JsonMockResponse::fromFile(Fixtures::path('appointment'))]);
+        $client = MockFactro::client(['DELETE /appointments/'.Id::A1 => JsonMockResponse::fromFile(Fixtures::path('appointment'))]);
 
-        $client->appointments()->delete('a1');
+        $client->appointments()->delete(Id::A1);
         $this->addToAssertionCount(1);
     }
 
@@ -90,7 +91,7 @@ final class AppointmentsTest extends TestCase
         $client = MockFactro::client([], new FactroOptions(baseUrl: MockFactro::BASE_URL, policy: RequestPolicy::withoutDeletes(), maxRetries: 0));
 
         $this->expectException(OperationNotPermittedException::class);
-        $client->appointments()->delete('a1');
+        $client->appointments()->delete(Id::A1);
     }
 
     public function testCreateManyPostsListOfPayloads(): void
@@ -104,7 +105,7 @@ final class AppointmentsTest extends TestCase
             self::assertIsArray($body[1]);
             self::assertSame(['employeeId', 'startDate', 'endDate', 'subject'], array_keys($body[0]));
             self::assertSame('e2', $body[1]['employeeId']);
-            self::assertSame('t1', $body[1]['referencedTaskId']);
+            self::assertSame(Id::T1, $body[1]['referencedTaskId']);
             self::assertArrayNotHasKey('subject', $body[1]);
 
             return JsonMockResponse::fromFile(Fixtures::path('appointments'));
@@ -113,8 +114,8 @@ final class AppointmentsTest extends TestCase
         $start = new \DateTimeImmutable('2026-09-15T08:00:00Z');
         $end = new \DateTimeImmutable('2026-09-15T09:00:00Z');
         $created = $client->appointments()->createMany([
-            new NewAppointment('e1', $start, $end, subject: 'A'),
-            new NewAppointment('e2', $start, $end, referencedTaskId: 't1'),
+            new NewAppointment(Id::E1, $start, $end, subject: 'A'),
+            new NewAppointment('e2', $start, $end, referencedTaskId: Id::T1),
         ]);
 
         self::assertCount(3, $created);
@@ -132,7 +133,7 @@ final class AppointmentsTest extends TestCase
         $client = MockFactro::client(['PUT /appointments/appointments' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
-                '[{"id":"a1","subject":"New"},{"id":"a2","location":"Berlin","endDate":"2026-09-15T12:00:00.000Z"}]',
+                '[{"id":"'.Id::A1.'","subject":"New"},{"id":"a2","location":"Berlin","endDate":"2026-09-15T12:00:00.000Z"}]',
                 $o['body'],
             );
 
@@ -140,7 +141,7 @@ final class AppointmentsTest extends TestCase
         }]);
 
         $updated = $client->appointments()->updateMany([
-            'a1' => new AppointmentChanges(subject: 'New'),
+            Id::A1 => new AppointmentChanges(subject: 'New'),
             'a2' => new AppointmentChanges(location: 'Berlin', endDate: new \DateTimeImmutable('2026-09-15T14:00:00+02:00')),
         ]);
 
@@ -157,6 +158,6 @@ final class AppointmentsTest extends TestCase
     public function testUpdateManyWithAnEmptyChangeSetIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->appointments()->updateMany(['a1' => new AppointmentChanges()]);
+        MockFactro::client([])->appointments()->updateMany([Id::A1 => new AppointmentChanges()]);
     }
 }

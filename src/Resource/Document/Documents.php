@@ -30,7 +30,7 @@ final class Documents extends AbstractResource
      */
     public function get(string $documentId): Document
     {
-        return Document::fromArray($this->object($this->transport->request('GET', '/documents/'.rawurlencode($documentId))));
+        return Document::fromArray($this->object($this->transport->request('GET', '/documents/'.self::id($documentId))));
     }
 
     /**

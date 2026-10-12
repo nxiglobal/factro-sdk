@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\Document\Input\DocumentUpload;
 use Nxi\Factro\Resource\Document\Output\Document;
 use Nxi\Factro\Resource\Task\Tasks;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -20,9 +21,9 @@ final class TasksDocumentsTest extends TestCase
 {
     public function testDocumentsHydratesFixture(): void
     {
-        $client = MockFactro::client(['GET /tasks/t1/documents' => JsonMockResponse::fromFile(Fixtures::path('documents'))]);
+        $client = MockFactro::client(['GET /tasks/'.Id::T1.'/documents' => JsonMockResponse::fromFile(Fixtures::path('documents'))]);
 
-        $documents = $client->tasks()->documents('t1');
+        $documents = $client->tasks()->documents(Id::T1);
 
         self::assertCount(2, $documents);
         self::assertContainsOnlyInstancesOf(Document::class, $documents);
@@ -30,7 +31,7 @@ final class TasksDocumentsTest extends TestCase
 
     public function testAddDocumentSendsMultipartAndHydratesDocument(): void
     {
-        $client = MockFactro::client(['POST /tasks/t1/documents' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['POST /tasks/'.Id::T1.'/documents' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertStringContainsString('name="file"; filename="Quote.pdf"', $o['body']);
             self::assertStringContainsString('%PDF', $o['body']);
@@ -42,30 +43,30 @@ final class TasksDocumentsTest extends TestCase
             return JsonMockResponse::fromFile(Fixtures::path('document'));
         }]);
 
-        $document = $client->tasks()->addDocument('t1', new DocumentUpload('Quote.pdf', '%PDF', 'application/pdf'));
+        $document = $client->tasks()->addDocument(Id::T1, new DocumentUpload('Quote.pdf', '%PDF', 'application/pdf'));
 
         self::assertSame('Quote.pdf', $document->title);
     }
 
     public function testRemoveDocumentDiscardsTheResponse(): void
     {
-        $client = MockFactro::client(['DELETE /tasks/t1/documents/d1' => JsonMockResponse::fromFile(Fixtures::path('document'))]);
+        $client = MockFactro::client(['DELETE /tasks/'.Id::T1.'/documents/'.Id::D1 => JsonMockResponse::fromFile(Fixtures::path('document'))]);
 
-        $client->tasks()->removeDocument('t1', 'd1');
+        $client->tasks()->removeDocument(Id::T1, Id::D1);
         $this->addToAssertionCount(1);
     }
 
     public function testAccessRightsUseTheTaskPathForEmployeesAndTeams(): void
     {
         $client = MockFactro::client([
-            'GET /tasks/t1/read_rights' => JsonMockResponse::fromFile(Fixtures::path('access-rights')),
-            'PUT /tasks/t1/team_read_rights' => JsonMockResponse::fromFile(Fixtures::path('team-access-right')),
+            'GET /tasks/'.Id::T1.'/read_rights' => JsonMockResponse::fromFile(Fixtures::path('access-rights')),
+            'PUT /tasks/'.Id::T1.'/team_read_rights' => JsonMockResponse::fromFile(Fixtures::path('team-access-right')),
         ]);
 
-        $rights = $client->tasks()->accessRights('t1');
+        $rights = $client->tasks()->accessRights(Id::T1);
 
         self::assertInstanceOf(AccessRights::class, $rights);
         self::assertCount(3, $rights->readRights());
-        self::assertNotSame('', $rights->grantTeamRead('team1')->teamId);
+        self::assertNotSame('', $rights->grantTeamRead(Id::TEAM1)->teamId);
     }
 }

@@ -200,6 +200,8 @@ All exceptions implement `Nxi\Factro\Exception\FactroException`.
 
 `FactroRequestException` carries `method`, `path`, `statusCode`, `rawBody`, `headers` and offers `factroMessage()` (from a JSON `message`/`error`/`detail`/`title` or the plain-text body).
 
+Ids that end up in a request path must be UUIDs (shape only, any case). Anything else, including `''`, `.` and `..`, throws `\InvalidArgumentException` before a request is built, so an id can never change the route or slip past a `RequestPolicy` deny pattern.
+
 ## Dates
 
 factro stores dates as UTC timestamps in three variants: `T22:00Z` and `T23:00Z` (created in the UI, local midnight in Europe/Berlin) and `T00:00Z` (created through the API with a plain date). DTOs expose them unchanged as `DateTimeImmutable` in UTC. Use `CalendarDate::fromFactro($utc, $timezone)` to get the intended calendar day and `CalendarDate` in write DTOs; `toFactro()` produces local midnight in UTC, the storage form of the UI.
