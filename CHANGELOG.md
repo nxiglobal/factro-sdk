@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `RequestPolicy` validates when it is built: methods are upper-cased (`['get']` used to deny every request) and anything outside GET, POST, PUT and DELETE throws `\InvalidArgumentException`, as does an invalid deny pattern (it used to permit everything). A pattern that fails at match time (backtrack limit) denies the request.
 - Ids in request paths must be UUIDs. Resource methods throw `\InvalidArgumentException` for anything else (`''`, `.`, `..`, slashes, short ids like `'T1'`) before a request is sent. Before, `rawurlencode()` let dot segments through, so `packages()->delete($projectId, '..')` bypassed deny patterns and `tasks()->get('')` hit `GET /tasks/`. `webhooks()->payloadsByAction()` rejects an empty action and `.`/`..`.
 - `HydrationException` exposes `actualType` (`get_debug_type()` of the received value, e.g. `null`, `int`, `array`) for logging without the value itself. The constructor signature is unchanged.
 - `TaskComment::$text` is `?string` instead of `string`. factro returns `text: null` for some comments (observed 2026-10-12); a missing key hydrates as `null` too, a non-string value still throws `HydrationException`.

@@ -12,14 +12,39 @@ namespace Nxi\Factro\Policy;
  */
 final readonly class RequestPolicy
 {
+    private const array METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
+
     /**
-     * @param list<string> $allowedMethods     upper-case HTTP methods
-     * @param list<string> $deniedPathPatterns PCRE patterns matched against the relative path without query
+     * @var list<string> upper-case HTTP methods
      */
-    public function __construct(
-        public array $allowedMethods = ['GET', 'POST', 'PUT', 'DELETE'],
-        public array $deniedPathPatterns = [],
-    ) {
+    public array $allowedMethods;
+
+    /**
+     * @var list<string>
+     */
+    public array $deniedPathPatterns;
+
+    /**
+     * @param list<string> $allowedMethods     HTTP methods, any case; only GET, POST, PUT and DELETE
+     * @param list<string> $deniedPathPatterns PCRE patterns matched against the relative path without query
+     *
+     * @throws \InvalidArgumentException for an unsupported method or an invalid pattern
+     */
+    public function __construct(array $allowedMethods = self::METHODS, array $deniedPathPatterns = [])
+    {
+        $methods = array_map(strtoupper(...), $allowedMethods);
+        foreach ($methods as $method) {
+            if (!in_array($method, self::METHODS, true)) {
+                throw new \InvalidArgumentException(sprintf('Unsupported HTTP method "%s", expected one of %s.', $method, implode(', ', self::METHODS)));
+            }
+        }
+        foreach ($deniedPathPatterns as $pattern) {
+            if (false === @preg_match($pattern, '')) {
+                throw new \InvalidArgumentException(sprintf('Invalid path pattern "%s": %s.', $pattern, preg_last_error_msg()));
+            }
+        }
+        $this->allowedMethods = $methods;
+        $this->deniedPathPatterns = $deniedPathPatterns;
     }
 
     public static function all(): self
@@ -52,6 +77,7 @@ final readonly class RequestPolicy
             return true;
         }
 
-        return array_all($this->deniedPathPatterns, static fn ($pattern) => 1 !== preg_match($pattern, $path));
+        // A pattern that fails at match time (e.g. backtrack limit) denies: fail closed.
+        return array_all($this->deniedPathPatterns, static fn ($pattern) => 0 === @preg_match($pattern, $path));
     }
 }
