@@ -78,6 +78,20 @@ final class NewTaskTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
 
-        new NewTask('T', 'pkg', clear: ['title'])->toPayload(new \DateTimeZone('UTC'), new MockClock(), sendCreationDate: false);
+        new NewTask('T', 'pkg', clear: ['title']);
+    }
+
+    public function testAnUnverifiedFieldIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new NewTask('T', 'pkg', clear: ['officerId']);
+    }
+
+    public function testAFieldSetAndClearedAtOnceIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new NewTask('T', 'pkg', executorId: 'u', clear: ['executorId']);
     }
 }

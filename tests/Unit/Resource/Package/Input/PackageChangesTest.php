@@ -35,4 +35,25 @@ final class PackageChangesTest extends TestCase
         self::assertSame(['colorScheme' => null], new PackageChanges(clear: ['colorScheme'])->toPayload(new \DateTimeZone('UTC')));
         self::assertFalse(new PackageChanges(clear: ['colorScheme'])->isEmpty());
     }
+
+    public function testAnUnknownClearedFieldIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new PackageChanges(clear: ['title']);
+    }
+
+    public function testAnUnverifiedFieldIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new PackageChanges(clear: ['officerId']);
+    }
+
+    public function testAFieldSetAndClearedAtOnceIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new PackageChanges(colorScheme: 'x', clear: ['colorScheme']);
+    }
 }

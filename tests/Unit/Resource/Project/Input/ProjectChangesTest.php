@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\Project\ProjectPriority;
 use Nxi\Factro\Resource\Project\ProjectState;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(ProjectChanges::class)]
@@ -35,5 +36,32 @@ final class ProjectChangesTest extends TestCase
             'plannedStartDate' => '2026-01-31T23:00:00.000Z',
         ], $changes->toPayload(new \DateTimeZone('Europe/Berlin')));
         self::assertFalse($changes->isEmpty());
+    }
+
+    public function testAClearedColorSchemeIsSentAsNull(): void
+    {
+        self::assertSame(['colorScheme' => null], new ProjectChanges(clear: ['colorScheme'])->toPayload(new \DateTimeZone('UTC')));
+        self::assertFalse(new ProjectChanges(clear: ['colorScheme'])->isEmpty());
+    }
+
+    /**
+     * @param list<string> $clear
+     */
+    #[DataProvider('invalidClears')]
+    public function testAnInvalidClearIsRejectedOnConstruction(array $clear, ?string $colorScheme): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new ProjectChanges(colorScheme: $colorScheme, clear: $clear);
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, ?string}>
+     */
+    public static function invalidClears(): iterable
+    {
+        yield 'unknown key' => [['colour'], null];
+        yield 'not verified' => [['officerId'], null];
+        yield 'set and cleared at once' => [['colorScheme'], 'red'];
     }
 }

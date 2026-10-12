@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\Task\TaskPriority;
 use Nxi\Factro\Resource\Task\Urgency;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(TaskChanges::class)]
@@ -52,17 +53,24 @@ final class TaskChangesTest extends TestCase
         self::assertFalse(new TaskChanges(clear: ['colorScheme'])->isEmpty());
     }
 
-    public function testAnUnknownClearedFieldIsRejected(): void
+    /**
+     * @param list<string> $clear
+     */
+    #[DataProvider('invalidClears')]
+    public function testAnInvalidClearIsRejectedOnConstruction(array $clear, ?string $colorScheme): void
     {
         $this->expectException(\InvalidArgumentException::class);
 
-        new TaskChanges(clear: ['colour'])->toPayload(new \DateTimeZone('UTC'));
+        new TaskChanges(colorScheme: $colorScheme, clear: $clear);
     }
 
-    public function testAFieldSetAndClearedAtOnceIsRejected(): void
+    /**
+     * @return iterable<string, array{list<string>, ?string}>
+     */
+    public static function invalidClears(): iterable
     {
-        $this->expectException(\InvalidArgumentException::class);
-
-        new TaskChanges(colorScheme: 'red', clear: ['colorScheme'])->toPayload(new \DateTimeZone('UTC'));
+        yield 'unknown key' => [['colour'], null];
+        yield 'refused by factro with 403' => [['officerId'], null];
+        yield 'set and cleared at once' => [['colorScheme'], 'red'];
     }
 }

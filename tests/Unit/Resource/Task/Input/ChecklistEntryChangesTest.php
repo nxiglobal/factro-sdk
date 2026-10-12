@@ -38,4 +38,18 @@ final class ChecklistEntryChangesTest extends TestCase
         self::assertSame(['checked' => true, 'assigneeId' => null, 'endDate' => null], $payload);
         self::assertFalse(new ChecklistEntryChanges(clear: ['endDate'])->isEmpty());
     }
+
+    public function testAnUnknownClearedFieldIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new ChecklistEntryChanges(clear: ['title']);
+    }
+
+    public function testAFieldSetAndClearedAtOnceIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new ChecklistEntryChanges(assigneeId: 'x', clear: ['assigneeId']);
+    }
 }

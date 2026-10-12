@@ -55,3 +55,11 @@ values, so CR/LF in the content type cannot add part headers. It does not reject
 `/` ends in a PHP warning and a `TypeError`), so `DocumentUpload` still validates the media type. `"`, CR and LF
 are stripped from the file name because `symfony/mime` would percent-encode them. Parts always carry
 `Content-Transfer-Encoding: 8bit`.
+
+## 2026-10-12 `clear` accepts only fields verified against the live API
+
+factro refuses `null` for some fields (`officerId` on a task: 403), so every DTO with `clear` lists the verified
+payload keys in a public `CLEARABLE` constant. The constructor rejects other keys and keys that are also set
+(`Payload::assertClearable()`, which needs property names equal to payload keys); `withoutNullsExcept()` keeps
+its checks as a safety net. A class gets `clear` only after a live test per field, so its signature shows what
+can be emptied. Rejected: accepting any key and letting the API fail at request time.

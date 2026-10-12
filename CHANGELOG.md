@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `clear` on `TaskChanges`, `PackageChanges`, `ChecklistEntryChanges` and `NewTask`: payload keys sent as explicit `null` to empty a field (e.g. `['colorScheme']`). An unknown key or a key that is also set throws `\InvalidArgumentException`.
+- `clear` on `TaskChanges`, `ProjectChanges`, `PackageChanges`, `ChecklistEntryChanges` and `NewTask`: payload keys sent as explicit `null` to empty a field (e.g. `['colorScheme']`). Each class lists the keys verified to accept `null` in `CLEARABLE`; the constructor throws `\InvalidArgumentException` for any other key (e.g. `officerId`, refused by factro with 403) or a key that is also set.
 - Support for Symfony 7.4 LTS (`^7.4 || ^8.0`).
 - `FactroClient` and `Transport` hide the token from `print_r()`/`var_dump()` via `__debugInfo()`.
 - `FactroClientFactory` with the transport chain: request policy, retry (GET only), rate limit (sliding window 480/min per token), scoping with raw token header and timeouts. `Transport::getMany()` sends GETs concurrently.

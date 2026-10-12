@@ -16,7 +16,14 @@ use Nxi\Factro\Time\CalendarDate;
 final readonly class ChecklistEntryChanges
 {
     /**
-     * @param list<string> $clear payload keys to send as null, e.g. ['assigneeId']
+     * Payload keys that factro accepts as null, verified against the live API.
+     *
+     * @var list<string>
+     */
+    public const array CLEARABLE = ['assigneeId', 'endDate'];
+
+    /**
+     * @param list<string> $clear payload keys from CLEARABLE to send as null
      */
     public function __construct(
         public ?string $title = null,
@@ -26,6 +33,7 @@ final readonly class ChecklistEntryChanges
         public ?string $assigneeId = null,
         public array $clear = [],
     ) {
+        Payload::assertClearable($this, $clear, self::CLEARABLE);
     }
 
     /**

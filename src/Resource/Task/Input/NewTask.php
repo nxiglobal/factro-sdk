@@ -21,8 +21,15 @@ use Psr\Clock\ClockInterface;
 final readonly class NewTask
 {
     /**
+     * Payload keys that factro accepts as null, verified against the live API.
+     *
+     * @var list<string>
+     */
+    public const array CLEARABLE = ['executorId'];
+
+    /**
      * @param array<string, mixed>|null $customFields
-     * @param list<string>              $clear        optional payload keys to send as null, e.g. ['executorId']
+     * @param list<string>              $clear        payload keys from CLEARABLE to send as null
      */
     public function __construct(
         public string $title,
@@ -41,6 +48,7 @@ final readonly class NewTask
         public ?Urgency $urgency = null,
         public array $clear = [],
     ) {
+        Payload::assertClearable($this, $clear, self::CLEARABLE);
     }
 
     /**
