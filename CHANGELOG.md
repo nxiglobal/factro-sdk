@@ -9,43 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Document uploads build their `multipart/form-data` body with `symfony/mime`, which is a new dependency. `DocumentUpload` rejects a content type that is not a media type (`type/subtype` with optional parameters, no control characters) with `\InvalidArgumentException`; before, CR/LF in the content type ended up raw in the part headers. `toMultipart()` (`@internal`) returns a `FormDataPart`, and `Http\MultipartBody` is gone.
-- `FactroOptions` validates on construction and throws `\InvalidArgumentException` naming the option: `baseUrl` must be an absolute https URL (plain http would send the token unencrypted), both timeouts must be greater than 0, `maxRetries` and `maxRetryAfterSeconds` must not be negative, `userAgent` must not contain CR or LF.
-- Integer fields reject floats outside the int range (`1e400`, `1e19`) with `HydrationException` instead of hydrating them as `0` or a wrapped negative number.
-- A retried 429 without `Retry-After` waits for `t` from the `ratelimit` header (capped at `maxRetryAfterSeconds`) instead of backing off exponentially from 500 ms into the same window.
-- The default rate limiter keeps one window per token across all clients of a PHP process. Before, every `FactroClientFactory::create()` got its own `InMemoryStorage`, so two clients with the same token could send up to 960 requests per minute together.
-- `RateLimitInfo::$limit`, `$windowSeconds` and `$resetSeconds` are `?int`: `null` means factro did not send the value, instead of `0`, which reads as "no requests allowed" or "resets now". `RateLimitException::retryAfterSeconds()` is `null` without `Retry-After` and without `t`.
-- `toPayload()` of every input DTO (and of `WorkRecordLocation` and `SortEntry`) is `@internal`: the body format follows the factro API and may change in minor releases. `isEmpty()` stays public.
-- Enum properties of output DTOs are nullable and get a raw `int|string` sibling named `<property>Value` (`Task::$taskState` and `$taskStateValue`, likewise `taskPriority`, `urgency`, `Project::$projectState`, `priority`, `User::$securityGroup`, `salutation`, `Contact::$salutation`, `Absence::$type`, `Comment::$referenceType`, `CustomView::$referenceType`, `viewType`, `ProjectStructureNode::$type`, `TodoListElement::$elementReferenceType`, `WorkRecord::$bookedOnReferenceType`). A value unknown to the SDK hydrates as `null` instead of throwing `HydrationException` for the whole list; a missing required value or a value that is neither int nor string still throws.
-- HTTP 403 throws the new `ForbiddenException` instead of `AuthenticationException`, which now means 401 (invalid token) only. `ForbiddenException` does not extend `AuthenticationException`.
-- A success response with invalid JSON or a JSON scalar throws `UnexpectedResponseException` (a `FactroRequestException`, so a `FactroException`) instead of `\JsonException` or `\UnexpectedValueException`.
-- `FactroDateTime::fromIsoUtc()` and `fromDateAndTime()` reject impossible dates and times (`2026-02-31`, `24:00`, `25:99`) instead of rolling them over or throwing `\DateMalformedStringException`. During hydration this surfaces as `HydrationException`.
-- `RequestPolicy` validates when it is built: methods are upper-cased (`['get']` used to deny every request) and anything outside GET, POST, PUT and DELETE throws `\InvalidArgumentException`, as does an invalid deny pattern (it used to permit everything). A pattern that fails at match time (backtrack limit) denies the request.
-- Ids in request paths must be UUIDs. Resource methods throw `\InvalidArgumentException` for anything else (`''`, `.`, `..`, slashes, short ids like `'T1'`) before a request is sent. Before, `rawurlencode()` let dot segments through, so `packages()->delete($projectId, '..')` bypassed deny patterns and `tasks()->get('')` hit `GET /tasks/`. `webhooks()->payloadsByAction()` rejects an empty action and `.`/`..`.
-- `HydrationException` exposes `actualType` (`get_debug_type()` of the received value, e.g. `null`, `int`, `array`) for logging without the value itself. The constructor signature is unchanged.
-- `TaskComment::$text` is `?string` instead of `string`. factro returns `text: null` for some comments (observed 2026-10-12); a missing key hydrates as `null` too, a non-string value still throws `HydrationException`.
-- `ChecklistEntryChanges` takes `clear` as well (e.g. `['assigneeId', 'endDate']` empties assignee and end date of an entry).
-- `NewTask` takes `clear` as well, for its optional fields (e.g. `['executorId']` creates a task without executor).
-- `TaskChanges` and `PackageChanges` take `clear`, a list of payload keys sent as explicit `null` to empty the field in factro (e.g. `['colorScheme']`). An unknown key or a key that is also set throws `\InvalidArgumentException`.
-
-- `AccessRights::readRights()` and `writeRights()` return `array<string, list<AccessRightReason>>` (employee id => reasons) instead of string lists. `AccessRightReason` carries `reason` as a plain string plus `projectId`, `packageId`, `teamId` and `taskId` as factro sends them in `IAccessRightReason`. `fixtures/access-rights.json` follows the real response shape.
+- Document uploads build their `multipart/form-data` body with the new dependency `symfony/mime`. `DocumentUpload` rejects a content type that is not a media type (CR/LF used to end up raw in the part headers). `Http\MultipartBody` is gone.
+- `FactroOptions` validates on construction (`\InvalidArgumentException` naming the option): `baseUrl` absolute https, timeouts > 0, `maxRetries` and `maxRetryAfterSeconds` >= 0, `userAgent` without CR/LF.
+- `RequestPolicy` validates when built: methods are upper-cased (`['get']` used to deny everything), only GET, POST, PUT and DELETE are allowed, an invalid deny pattern throws instead of permitting everything. A pattern failing at match time denies the request.
+- Ids in request paths must be UUIDs, otherwise `\InvalidArgumentException` before sending. Dot segments used to bypass deny patterns (`packages()->delete($projectId, '..')`). `webhooks()->payloadsByAction()` rejects an empty action and `.`/`..`.
+- The default rate limiter keeps one window per token across all clients of a process, instead of one per `FactroClientFactory::create()` (two clients could send 960 requests/min).
+- A retried 429 without `Retry-After` waits for `t` from the `ratelimit` header (capped at `maxRetryAfterSeconds`) instead of backing off exponentially.
+- `RateLimitInfo::$limit`, `$windowSeconds` and `$resetSeconds` are `?int` (`null` = not sent, instead of `0`). `RateLimitException::retryAfterSeconds()` is `null` without `Retry-After` and `t`.
+- HTTP 403 throws the new `ForbiddenException`; `AuthenticationException` means 401 only. Neither extends the other.
+- A success response with invalid JSON or a JSON scalar throws `UnexpectedResponseException` instead of `\JsonException` or `\UnexpectedValueException`.
+- Enum properties of output DTOs are nullable with a raw `int|string` sibling `<property>Value` (e.g. `Task::$taskState`/`$taskStateValue`). An unknown value hydrates as `null` instead of failing the whole list; a missing required value or a non-int/string value still throws.
+- Hydration: int fields reject floats outside the int range (`1e19`), `FactroDateTime::fromIsoUtc()`/`fromDateAndTime()` reject impossible dates and times (`2026-02-31`, `24:00`), `HydrationException` exposes `actualType` without the value.
+- `TaskComment::$text` is `?string`: factro returns `text: null` for some comments (observed 2026-10-12).
+- `AccessRights::readRights()`/`writeRights()` return `array<string, list<AccessRightReason>>` (employee id => reasons) following the real response shape, also in `fixtures/access-rights.json`.
+- `toPayload()` of all input DTOs (also `WorkRecordLocation`, `SortEntry`) is `@internal`; `isEmpty()` stays public.
 
 ### Added
 
-- Support for Symfony 7.4 LTS: `symfony/clock`, `symfony/http-client` and `symfony/rate-limiter` accept `^7.4 || ^8.0`.
-- `FactroClient` and `Transport` implement `__debugInfo()`, so `print_r()` and `var_dump()` of a client no longer show the token.
-- `FactroClientFactory` builds the transport chain: request policy, retry (GET only), rate limit (sliding window 480/min per token), scoping with raw token header and timeouts. `Transport::getMany()` sends GETs concurrently.
+- `clear` on `TaskChanges`, `PackageChanges`, `ChecklistEntryChanges` and `NewTask`: payload keys sent as explicit `null` to empty a field (e.g. `['colorScheme']`). An unknown key or a key that is also set throws `\InvalidArgumentException`.
+- Support for Symfony 7.4 LTS (`^7.4 || ^8.0`).
+- `FactroClient` and `Transport` hide the token from `print_r()`/`var_dump()` via `__debugInfo()`.
+- `FactroClientFactory` with the transport chain: request policy, retry (GET only), rate limit (sliding window 480/min per token), scoping with raw token header and timeouts. `Transport::getMany()` sends GETs concurrently.
 - `FactroOptions`, `RequestPolicy`, `RateLimitInfo` and the exception family under `Nxi\Factro\Exception`.
-- Coverage of the factro Core API (OpenAPI document of 2026-09-11) except `GET /tasks` and the deprecated `/efforts*` routes, grouped by resource under `Nxi\Factro\Resource`:
-  - Tasks: CRUD, `setState()`, batch `createMany()`/`updateMany()`, comments, connections, checklist entries, task tags, project/package/company/contact associations, documents.
-  - Projects: CRUD, batch operations, `structure()` (`ProjectStructureNode`), project tags, company/contact associations, comments, documents.
-  - Packages: CRUD, batch operations, moves between projects and packages, company/contact associations, `shiftWithSuccessors()`, comments, documents.
-  - Users: CRUD, batch operations, employee tags (`tagsForMany()` concurrent, 404 as empty list), substitutes, absences, `quota()`.
-  - Companies: CRUD, batch operations, company tags.
-  - Work records: CRUD, batch operations, comments.
-  - `Appointments`, `Contacts`, `Teams`, `Documents` (with `quota()`), `Comments`, `Notes`, `TodoLists`, `Webhooks`, `CustomViews`, `Templates`.
-- Shared `AccessRights` (employee and team read/write rights) reachable through `tasks()`, `packages()`, `projects()` and `templates()`.
-- Document uploads as `multipart/form-data` (`DocumentUpload`) without a `symfony/mime` dependency.
-- `Nxi\Factro\Resource\ColorScheme`: the eight colours the factro UI offers for `colorScheme`. Input and output DTOs keep `colorScheme` a string because the API stores any value.
-- Time helpers `FactroDateTime` and `CalendarDate` for the three date storage variants of factro.
-- Testing support: hand-written response fixtures under `fixtures/` with `Nxi\Factro\Testing\Fixtures`, and factories under `Nxi\Factro\Testing\Factory`.
+- Coverage of the factro Core API (OpenAPI document of 2026-09-11) except `GET /tasks` and the deprecated `/efforts*` routes, grouped under `Nxi\Factro\Resource`:
+  - Tasks: CRUD, `setState()`, batch operations, comments, connections, checklist entries, tags, associations, documents.
+  - Projects: CRUD, batch operations, `structure()`, tags, associations, comments, documents.
+  - Packages: CRUD, batch operations, moves, associations, `shiftWithSuccessors()`, comments, documents.
+  - Users: CRUD, batch operations, employee tags (`tagsForMany()` concurrent), substitutes, absences, `quota()`.
+  - Companies and work records: CRUD, batch operations, tags or comments.
+  - `Appointments`, `Contacts`, `Teams`, `Documents`, `Comments`, `Notes`, `TodoLists`, `Webhooks`, `CustomViews`, `Templates`.
+- Shared `AccessRights` through `tasks()`, `packages()`, `projects()` and `templates()`.
+- `ColorScheme` with the eight colours of the factro UI; `colorScheme` stays a string in DTOs because the API stores any value.
+- `FactroDateTime` and `CalendarDate` for the three date storage variants of factro.
+- Testing support: fixtures under `fixtures/` with `Testing\Fixtures`, factories under `Testing\Factory`.
