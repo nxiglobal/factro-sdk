@@ -6,6 +6,7 @@ namespace Nxi\Factro\Http;
 
 use Nxi\Factro\Exception\AuthenticationException;
 use Nxi\Factro\Exception\FactroRequestException;
+use Nxi\Factro\Exception\ForbiddenException;
 use Nxi\Factro\Exception\NotFoundException;
 use Nxi\Factro\Exception\RateLimitException;
 use Nxi\Factro\Exception\ServerException;
@@ -27,7 +28,8 @@ final class ErrorMapper
     {
         $message = self::extractMessage($body) ?? sprintf('factro responded with HTTP %d to %s %s', $status, $method, $path);
         $class = match (true) {
-            401 === $status || 403 === $status => AuthenticationException::class,
+            401 === $status => AuthenticationException::class,
+            403 === $status => ForbiddenException::class,
             404 === $status => NotFoundException::class,
             400 === $status || 422 === $status => ValidationException::class,
             429 === $status => RateLimitException::class,

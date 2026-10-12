@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- HTTP 403 throws the new `ForbiddenException` instead of `AuthenticationException`, which now means 401 (invalid token) only. `ForbiddenException` does not extend `AuthenticationException`.
 - A success response with invalid JSON or a JSON scalar throws `UnexpectedResponseException` (a `FactroRequestException`, so a `FactroException`) instead of `\JsonException` or `\UnexpectedValueException`.
 - `FactroDateTime::fromIsoUtc()` and `fromDateAndTime()` reject impossible dates and times (`2026-02-31`, `24:00`, `25:99`) instead of rolling them over or throwing `\DateMalformedStringException`. During hydration this surfaces as `HydrationException`.
 - `RequestPolicy` validates when it is built: methods are upper-cased (`['get']` used to deny every request) and anything outside GET, POST, PUT and DELETE throws `\InvalidArgumentException`, as does an invalid deny pattern (it used to permit everything). A pattern that fails at match time (backtrack limit) denies the request.

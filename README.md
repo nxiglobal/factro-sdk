@@ -188,7 +188,8 @@ All exceptions implement `Nxi\Factro\Exception\FactroException`.
 
 | Exception | When |
 |:--|:--|
-| `AuthenticationException` | HTTP 401 (invalid token) and 403 (for example "Task is closed") |
+| `AuthenticationException` | HTTP 401 (invalid token) |
+| `ForbiddenException` | HTTP 403, the token may not perform this operation (for example "Task is closed") |
 | `NotFoundException` | HTTP 404; `find*()` methods turn it into `null` |
 | `ValidationException` | HTTP 400 and 422, `errors()` returns the body's error list |
 | `RateLimitException` | HTTP 429, `retryAfterSeconds()` from `Retry-After` or the `ratelimit` header |

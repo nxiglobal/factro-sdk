@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Tests\Unit\Resource\Task;
 
-use Nxi\Factro\Exception\AuthenticationException;
+use Nxi\Factro\Exception\ForbiddenException;
 use Nxi\Factro\FactroOptions;
 use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
@@ -124,14 +124,14 @@ final class TasksTest extends TestCase
         MockFactro::client([])->tasks()->update(Id::T1, new TaskChanges());
     }
 
-    public function testClosedTaskYieldsAuthenticationExceptionWithFactroMessage(): void
+    public function testClosedTaskYieldsForbiddenExceptionWithFactroMessage(): void
     {
         $client = MockFactro::client(['PUT /tasks/'.Id::T1 => static fn (): MockResponse => MockResponse::fromFile(Fixtures::path('errors/403-task-closed'), ['http_code' => 403])]);
 
         try {
             $client->tasks()->update(Id::T1, new TaskChanges(title: 'x'));
-            self::fail('expected AuthenticationException');
-        } catch (AuthenticationException $e) {
+            self::fail('expected ForbiddenException');
+        } catch (ForbiddenException $e) {
             self::assertSame('Task is closed', $e->getMessage());
             self::assertSame(403, $e->statusCode);
         }
