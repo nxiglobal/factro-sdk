@@ -90,6 +90,17 @@ final class FactroRetryStrategyTest extends TestCase
         self::assertCount(1, $this->sent);
     }
 
+    public function testGetIsRetriedOn429WithoutDelayHint(): void
+    {
+        $client = $this->client([
+            new MockResponse('', ['http_code' => 429, 'response_headers' => ['ratelimit' => '"500-in-1min"; r=0']]),
+            new MockResponse('ok'),
+        ]);
+
+        self::assertSame('ok', $client->request('GET', 'https://factro.test/x')->getContent());
+        self::assertCount(2, $this->sent);
+    }
+
     public function testGetIsRetriedOnTransportError(): void
     {
         $client = $this->client([

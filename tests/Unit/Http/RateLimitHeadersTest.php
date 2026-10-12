@@ -35,6 +35,24 @@ final class RateLimitHeadersTest extends TestCase
         self::assertSame(60, $info->windowSeconds);
     }
 
+    public function testMissingValuesStayNull(): void
+    {
+        $headers = ['ratelimit' => ['"custom"; r=12']];
+        $info = RateLimitHeaders::parse($headers);
+
+        self::assertNotNull($info);
+        self::assertSame(12, $info->remaining);
+        self::assertNull($info->limit);
+        self::assertNull($info->windowSeconds);
+        self::assertNull($info->resetSeconds);
+        self::assertNull(RateLimitHeaders::retryAfterSeconds($headers));
+    }
+
+    public function testZeroResetIsKept(): void
+    {
+        self::assertSame(0, RateLimitHeaders::parse(['ratelimit' => ['"500-in-1min"; r=0; t=0']])?->resetSeconds);
+    }
+
     public function testReturnsNullWithoutRatelimitHeader(): void
     {
         self::assertNull(RateLimitHeaders::parse(['content-type' => ['application/json']]));

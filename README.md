@@ -176,7 +176,7 @@ $client->workRecords()->create(new NewWorkRecord(
 | `maxRetryAfterSeconds` | 5 | longer `Retry-After` values surface as `RateLimitException` instead of blocking |
 | `logger` | `NullLogger` | one line per call |
 | `clock` | `NativeClock` | `creationDate` when creating tasks, `MockClock` in tests |
-| `onRateLimit` | `null` | closure receiving `RateLimitInfo` after every response, for metrics |
+| `onRateLimit` | `null` | closure receiving `RateLimitInfo` after every response, for metrics; `limit`, `windowSeconds` and `resetSeconds` are `null` when factro did not send them |
 | `userAgent` | `nxi-factro-sdk/<version>` | identification towards factro |
 | `sendCreationDate` | `true` | whether `NewTask` sends `creationDate`; the API's default is undocumented |
 
