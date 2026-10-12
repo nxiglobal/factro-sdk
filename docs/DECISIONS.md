@@ -1,67 +1,57 @@
 # Decisions
 
-## 2026-09-14 Resources live under Nxi\Factro\Resource with Input and Output sub-namespaces
+## 2026-09-14 Resource namespace layout
 
-One namespace per API resource below `Nxi\Factro\Resource` holds the resource class without suffix
-(`Tasks`, `Projects`, ...), its enums, `Input` for sent bodies and `Output` for received payloads. DTOs keep
-direction prefixes (`NewTask`, `TaskChanges`) to avoid import collisions. Cross-cutting namespaces
-(`Exception`, `Http`, `Mapping`, `Policy`, `Time`, `Testing`) stay outside. `Resource\AbstractResource`
-and `Mapping` are internal. Rejected: a layout by kind (`Api`, `Data`, `Enum`) and the names `Model` and
-`Api`.
+`Nxi\Factro\Resource\<Name>\` holds the resource class without suffix (`Tasks`), its enums, `Input` (sent bodies)
+and `Output` (received payloads). DTOs keep direction prefixes (`NewTask`, `TaskChanges`) to avoid import
+collisions. `Exception`, `Http`, `Mapping`, `Policy`, `Time` and `Testing` stay outside; `AbstractResource` and
+`Mapping` are internal. Rejected: a layout by kind (`Api`, `Data`, `Enum`) and the names `Model` and `Api`.
 
-## 2026-09-14 Access rights are one shared class, comments and tags stay per resource
+## 2026-09-14 Shared access rights, per-resource comments and tags
 
-Tasks, packages, projects and templates share the read/write-right shapes, so `Resource\AccessRight\AccessRights`
-implements them once and the owner hands out a bound instance (`$client->tasks()->accessRights($id)`).
-Packages pass a second path because factro's team-right routes omit `/packages`. Comments and tags carry
-their owner's reference key (`taskId`, `projectId`, ...), so they stay resource-local DTOs behind uniform
-method names. Contacts reuse `Resource\User\Salutation` because the API shares the schema.
+`Resource\AccessRight\AccessRights` implements the read/write-right shapes once; owners hand out a bound
+instance (`$client->tasks()->accessRights($id)`). Packages pass a second path because factro's team-right routes
+omit `/packages`. Comments and tags carry their owner's key (`taskId`, ...) and stay resource-local behind
+uniform method names. Contacts reuse `Resource\User\Salutation` (shared schema).
 
-## 2026-09-14 Enum cases are UPPERCASE and abbreviations are spelled out
+## 2026-09-14 Enum cases UPPERCASE, abbreviations spelled out
 
-`IN_PROCESS`, `GUEST_RIGHTS`, `PRIORITY_10` (not `P10`). Backing values stay as the API sends them.
+`IN_PROCESS`, `PRIORITY_10` (not `P10`). Backing values stay as the API sends them.
 
 ## 2026-09-14 Relative paths are sent without a leading slash
 
-Per RFC 3986, Symfony's `resolveUrl()` lets `/tasks/{id}` replace the whole `base_uri` path. The public
-contract keeps leading slashes (`Transport::request('GET', '/tasks/abc')`, policy patterns like
-`#^/tasks/#`). Internally the base URL ends with exactly one `/`, `Transport` strips the leading slash and
-`PolicyHttpClient` restores it before `RequestPolicy::permits()`. Test `MockHttpClient` base URIs end in `/`.
+Symfony's `resolveUrl()` (RFC 3986) lets `/tasks/{id}` replace the whole `base_uri` path. The public contract
+keeps leading slashes (`Transport::request('GET', '/tasks/abc')`, policy patterns like `#^/tasks/#`). Internally
+the base URL ends in one `/`, `Transport` strips the leading slash and `PolicyHttpClient` restores it for
+`RequestPolicy::permits()`. Test base URIs end in `/`.
 
-## 2026-09-14 Response rows are rebuilt with string keys in AbstractResource
+## 2026-09-14 Response rows are rebuilt with string keys
 
-`rows()` and `object()` copy decoded rows into string-keyed arrays so `fromArray(array<string, mixed>)`
-holds without `@var` assertions. JSON object keys are always strings, so the copy changes nothing.
-
-## 2026-09-14 Document uploads build multipart bodies without symfony/mime
-
-Superseded by 2026-10-12 "Document uploads use symfony/mime".
-
-`POST .../documents` has no documented request body. `Http\MultipartBody` sends one `multipart/form-data`
-part named `file`, taken from observed API behaviour; `symfony/mime` is not worth a dependency for one route.
+`AbstractResource::rows()`/`object()` copy decoded rows into string-keyed arrays so `fromArray(array<string, mixed>)`
+holds without `@var`. JSON object keys are strings anyway.
 
 ## 2026-09-14 Out of scope: GET /tasks and the deprecated efforts routes
 
-`GET /tasks` returns all tenant tasks unpaginated; use `Tasks::listByProject()`. The deprecated `/efforts*`
-routes are covered by work records. Webhook `Action` (about 300 values) stays a string; the undocumented
-`startDate` path parameter of webhook routes is sent as ISO UTC.
+`GET /tasks` is unpaginated and tenant-wide; use `Tasks::listByProject()`. Work records cover `/efforts*`.
+Webhook `Action` (about 300 values) stays a string; the undocumented `startDate` path parameter of webhook routes
+is sent as ISO UTC.
 
-## 2026-10-04 Fixtures are hand-written, there is no live recorder
+## 2026-10-04 Fixtures are hand-written, no live recorder
 
-Fixtures ship with the package and are public. A recording from a real tenant would publish tenant and
-object IDs and custom field names, and the former recorder covered only a fifth of the files. Fixtures are
-written by hand from the OpenAPI spec and observed API behaviour; reported deviations are fixed the same way.
+Fixtures ship publicly. Recordings would publish tenant and object IDs and custom field names, and the former
+recorder covered only a fifth of the files. Fixtures come from the OpenAPI spec and observed API behaviour;
+deviations are fixed by hand.
 
 ## 2026-10-12 Symfony 7.4 LTS is supported for the whole 1.x line
 
-The SDK uses no Symfony 8.0-only API, so the components accept `^7.4 || ^8.0` and projects on the LTS
-(maintained until 2029) can install it. Dropping 7.4 later is a BC break and needs a major version. CI runs
-the tests against the lowest and the newest 7.4 and the lowest 8.x.
+No 8.0-only API is used, so components accept `^7.4 || ^8.0` (LTS maintained until 2029). Dropping 7.4 is a BC
+break and needs a major version. CI tests the lowest and newest 7.4 and the lowest 8.x.
 
 ## 2026-10-12 Document uploads use symfony/mime
 
-`DocumentUpload::toMultipart()` builds a `FormDataPart` instead of the hand-written `Http\MultipartBody`.
-`symfony/mime` encodes header values, so a content type with CR/LF can no longer add part headers. It does
-not reject invalid values (a type without `/` ends in a PHP warning and a `TypeError`), so `DocumentUpload`
-still validates the media type. `"`, CR and LF are stripped from the file name because `symfony/mime` would
-percent-encode them. Parts carry `Content-Transfer-Encoding: 8bit`, which `FormDataPart` always sets.
+Replaces the hand-written `Http\MultipartBody` from 2026-09-14 (one `file` part, taken from observed behaviour;
+the route has no documented body). `DocumentUpload::toMultipart()` builds a `FormDataPart`, which encodes header
+values, so CR/LF in the content type cannot add part headers. It does not reject invalid values (a type without
+`/` ends in a PHP warning and a `TypeError`), so `DocumentUpload` still validates the media type. `"`, CR and LF
+are stripped from the file name because `symfony/mime` would percent-encode them. Parts always carry
+`Content-Transfer-Encoding: 8bit`.
