@@ -162,7 +162,7 @@ $client->workRecords()->create(new NewWorkRecord(
 
 ## Options
 
-`FactroOptions` is readonly and built with named arguments:
+`FactroOptions` is readonly and built with named arguments. Invalid values (non-https `baseUrl`, timeouts <= 0, negative retry values, line breaks in `userAgent`) throw `\InvalidArgumentException` on construction:
 
 | Option | Default | Purpose |
 |:--|:--|:--|
