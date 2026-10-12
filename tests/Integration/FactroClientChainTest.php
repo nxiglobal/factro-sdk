@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Nxi\Factro\Tests\Integration;
 
 use Nxi\Factro\Exception\AuthenticationException;
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\Exception\RateLimitException;
 use Nxi\Factro\Exception\ServerException;
 use Nxi\Factro\FactroClientFactory;
 use Nxi\Factro\FactroOptions;
-use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
 use Nxi\Factro\RateLimitInfo;
 use Nxi\Factro\Tests\Support\MockFactro;

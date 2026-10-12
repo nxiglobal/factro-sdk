@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Nxi\Factro\Tests\Unit\Resource\Task;
 
 use Nxi\Factro\Exception\ForbiddenException;
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\FactroOptions;
-use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
 use Nxi\Factro\Resource\Task\Input\NewTask;
 use Nxi\Factro\Resource\Task\Input\TaskChanges;

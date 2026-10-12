@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Tests\Unit\Resource\Team;
 
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\FactroOptions;
-use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
 use Nxi\Factro\Resource\Team\Input\NewTeam;
 use Nxi\Factro\Resource\Team\Input\TeamChanges;

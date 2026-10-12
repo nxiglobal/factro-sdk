@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Tests\Unit\Resource\Package;
 
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\FactroOptions;
-use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
 use Nxi\Factro\Resource\Package\Input\NewPackage;
 use Nxi\Factro\Resource\Package\Input\PackageChanges;

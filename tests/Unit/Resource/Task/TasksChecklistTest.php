@@ -74,7 +74,7 @@ final class TasksChecklistTest extends TestCase
         $first = Fixtures::json('checklist')[0];
         $client = MockFactro::client(['DELETE /tasks/'.Id::T1.'/checklist/'.Id::C1 => new JsonMockResponse($first)]);
 
-        $client->tasks()->removeChecklistEntry(Id::T1, Id::C1);
+        $client->tasks()->deleteChecklistEntry(Id::T1, Id::C1);
         $this->addToAssertionCount(1);
     }
 }

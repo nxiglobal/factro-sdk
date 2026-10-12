@@ -96,21 +96,21 @@ final class WorkRecords extends AbstractResource
      * PUT /work-records/work-records. Keys are work record ids; each element is sent as changes plus "id".
      * Atomic like createMany(): if one update fails, none is applied.
      *
-     * @param array<string, WorkRecordChanges> $changesById
+     * @param array<string, WorkRecordChanges> $changes
      *
      * @return list<WorkRecord>
      */
-    public function updateMany(array $changesById): array
+    public function updateMany(array $changes): array
     {
-        if ([] === $changesById) {
+        if ([] === $changes) {
             throw new \InvalidArgumentException('updateMany() needs at least one WorkRecordChanges.');
         }
         $payload = [];
-        foreach ($changesById as $workRecordId => $changes) {
-            if ($changes->isEmpty()) {
+        foreach ($changes as $workRecordId => $workRecordChanges) {
+            if ($workRecordChanges->isEmpty()) {
                 throw new \InvalidArgumentException(sprintf('WorkRecordChanges for "%s" must set at least one field.', $workRecordId));
             }
-            $payload[] = ['id' => (string) $workRecordId] + $changes->toPayload();
+            $payload[] = ['id' => (string) $workRecordId] + $workRecordChanges->toPayload();
         }
 
         return array_map(WorkRecord::fromArray(...), $this->rows($this->transport->request('PUT', '/work-records/work-records', json: $payload)));

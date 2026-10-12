@@ -207,7 +207,7 @@ final class Tasks extends AbstractResource
     /**
      * DELETE /tasks/{id}/checklist/{entryId}. The response (the deleted entry) is discarded.
      */
-    public function removeChecklistEntry(string $taskId, string $entryId): void
+    public function deleteChecklistEntry(string $taskId, string $entryId): void
     {
         $this->transport->request('DELETE', '/tasks/'.self::id($taskId).'/checklist/'.self::id($entryId));
     }

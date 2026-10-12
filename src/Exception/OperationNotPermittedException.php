@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nxi\Factro\Policy;
-
-use Nxi\Factro\Exception\FactroException;
+namespace Nxi\Factro\Exception;
 
 /**
  * Thrown before a request is sent when the consumer's RequestPolicy forbids it.
