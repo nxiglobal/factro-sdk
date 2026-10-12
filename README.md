@@ -70,7 +70,7 @@ Nxi\Factro\Resource\Task\Input\NewTask, TaskChanges, NewTaskComment, TaskConnect
 Nxi\Factro\Resource\Task\Output\Task, TaskComment, TaskConnection
 ```
 
-`Project`, `Package`, `WorkRecord`, `User`, `Company`, `Contact`, `Appointment`, `Team`, `Document`, `Comment`, `Note`, `TodoList`, `Webhook`, `CustomView` and `Template` follow the same pattern. Enum cases are UPPERCASE (`TaskState::IN_PROCESS`, `TaskPriority::PRIORITY_50`). Enum properties of output DTOs are nullable and have a raw sibling (`$task->taskState` and `$task->taskStateValue`): a value this SDK version does not know yet hydrates as `null` with the raw value kept, instead of failing the whole response. `Nxi\Factro\Http`, `Nxi\Factro\Mapping` and `Resource\AbstractResource` are `@internal`.
+`Project`, `Package`, `WorkRecord`, `User`, `Company`, `Contact`, `Appointment`, `Team`, `Document`, `Comment`, `Note`, `TodoList`, `Webhook`, `CustomView` and `Template` follow the same pattern. Enum cases are UPPERCASE (`TaskState::IN_PROCESS`, `TaskPriority::PRIORITY_50`). Enum properties of output DTOs are nullable and have a raw sibling (`$task->taskState` and `$task->taskStateValue`): a value this SDK version does not know yet hydrates as `null` with the raw value kept, instead of failing the whole response. `Nxi\Factro\Http`, `Nxi\Factro\Mapping`, `Resource\AbstractResource` and the `toPayload()` methods of the input DTOs are `@internal`.
 
 Operations that recur across resources share one naming scheme:
 
@@ -272,7 +272,7 @@ In multi-tenant applications where the token changes per user, do not register `
 
 ## Versioning
 
-The SDK follows [Semantic Versioning](https://semver.org): breaking changes only come with a new major version. Classes, methods and namespaces marked `@internal` (`Nxi\Factro\Http`, `Nxi\Factro\Mapping`, `Resource\AbstractResource`) are not covered and may change in any release. `CHANGELOG.md` lists the changes of every release.
+The SDK follows [Semantic Versioning](https://semver.org): breaking changes only come with a new major version. Classes, methods and namespaces marked `@internal` (`Nxi\Factro\Http`, `Nxi\Factro\Mapping`, `Resource\AbstractResource`, `toPayload()`/`toMultipart()` of the DTOs) are not covered and may change in any release. `CHANGELOG.md` lists the changes of every release.
 
 ## Contributing
 

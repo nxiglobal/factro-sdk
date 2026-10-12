@@ -39,6 +39,8 @@ final readonly class WorkRecordLocation
     /**
      * All five keys, null allowed, as factro expects them in write bodies.
      *
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array{name: ?string, street: ?string, city: ?string, zipCode: ?string, country: ?string}
      */
     public function toPayload(): array

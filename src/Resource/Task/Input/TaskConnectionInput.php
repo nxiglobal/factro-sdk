@@ -20,6 +20,8 @@ final readonly class TaskConnectionInput
     }
 
     /**
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array{connectedTaskId: string, isPredecessor: bool, isSuccessor: bool}
      */
     public function toPayload(): array

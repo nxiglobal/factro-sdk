@@ -31,6 +31,8 @@ final readonly class SortEntry
     }
 
     /**
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array{id: string, desc: bool}
      */
     public function toPayload(): array

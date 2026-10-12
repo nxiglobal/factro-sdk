@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `toPayload()` of every input DTO (and of `WorkRecordLocation` and `SortEntry`) is `@internal`: the body format follows the factro API and may change in minor releases. `isEmpty()` stays public.
 - Enum properties of output DTOs are nullable and get a raw `int|string` sibling named `<property>Value` (`Task::$taskState` and `$taskStateValue`, likewise `taskPriority`, `urgency`, `Project::$projectState`, `priority`, `User::$securityGroup`, `salutation`, `Contact::$salutation`, `Absence::$type`, `Comment::$referenceType`, `CustomView::$referenceType`, `viewType`, `ProjectStructureNode::$type`, `TodoListElement::$elementReferenceType`, `WorkRecord::$bookedOnReferenceType`). A value unknown to the SDK hydrates as `null` instead of throwing `HydrationException` for the whole list; a missing required value or a value that is neither int nor string still throws.
 - HTTP 403 throws the new `ForbiddenException` instead of `AuthenticationException`, which now means 401 (invalid token) only. `ForbiddenException` does not extend `AuthenticationException`.
 - A success response with invalid JSON or a JSON scalar throws `UnexpectedResponseException` (a `FactroRequestException`, so a `FactroException`) instead of `\JsonException` or `\UnexpectedValueException`.

@@ -27,6 +27,8 @@ final readonly class NewAbsence
     /**
      * Payload of the single-user route; employeeId is taken from the path and never sent.
      *
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array<string, mixed>
      */
     public function toPayload(): array
