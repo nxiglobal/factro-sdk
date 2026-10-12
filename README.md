@@ -57,6 +57,14 @@ $client->tasks()->update($created->id, new TaskChanges(description: '<p>Done</p>
 $client->tasks()->setState($created->id, TaskState::CLOSED);
 ```
 
+Update DTOs send only the fields that are set: factro treats PUT as a partial update, so `null` means "leave unchanged". To empty a field, name its payload key in `clear`; it is sent as explicit `null`:
+
+```php
+$client->tasks()->update($taskId, new TaskChanges(clear: ['executorId']));
+```
+
+`clear` exists in `TaskChanges`, `PackageChanges`, `ChecklistEntryChanges` and `NewTask` (there it suppresses factro's default, e.g. a task without executor). A key that is unknown or also set in the same call throws `\InvalidArgumentException`. factro does not accept `null` for every field (`officerId: null` on a task is refused with 403), so check the class docblock for the fields verified against the API.
+
 `FactroClientFactory::create()` wraps the base client in a decorator chain: request policy, retry (GET only), rate limiter, scoping (base URI, headers, timeouts). Every request passes through `Transport`, which decodes JSON, maps failures onto the exception family in `Nxi\Factro\Exception` and logs one line per call (never headers, never bodies). Resource classes are reached through `$client->projects()`, `packages()`, `tasks()`, `users()`, `companies()`, `contacts()`, `workRecords()`, `appointments()`, `teams()`, `documents()`, `comments()`, `notes()`, `todoLists()`, `webhooks()`, `customViews()` and `templates()`; together they cover every operation of the Core API except `GET /tasks` (tenant-wide, unpaginated) and the deprecated `/efforts*` routes.
 
 ## Package layout
@@ -80,7 +88,7 @@ Operations that recur across resources share one naming scheme:
 | Batch routes (`POST /x/x`, `PUT /x/x`) | `createMany(list<NewX>)`, `updateMany(array<id, XChanges>)` |
 | Comments | `comments()`, `comment()`, `addComment()`, `deleteComment()` |
 | Tags | `taskTags()`/`projectTags()`/`companyTags()`/`employeeTags()`, `createXTag()`, `deleteXTag()`, `tags($id)`, `addTag()`, `removeTag()` |
-| Associations | `setCompany()`, `removeCompany()`, `setContact()`, `removeContact()`, `moveToProject()`, `removeFromProject()`, `moveToPackage()`, `removeFromPackage()` |
+| Associations | `setCompany()`, `removeCompany()`, `setContact()`, `removeContact()`, `moveToProject()`, `removeFromProject()`, `moveToPackage()`, `removeFromPackage()` (packages: `removeFromParentPackage()`) |
 | Documents | `documents()`, `addDocument(DocumentUpload)`, `removeDocument()` |
 | Access rights | `accessRights($id)` returns `AccessRights` with `readRights()`, `writeRights()`, `grantRead()`, `revokeRead()`, `grantWrite()`, `revokeWrite()`, `grantTeamRead()`, `revokeTeamRead()`, `grantTeamWrite()`, `revokeTeamWrite()` |
 
@@ -96,7 +104,7 @@ $tags = $client->users()->tagsForMany(array_column($users, 'id'), concurrency: 5
 $all = $client->users()->employeeTags();                                            // GET /users/tags
 ```
 
-Comments (`comments()`, `addComment()`), connections (`connections()`, `addConnection()`) and the project structure (`projects()->structure()`, a tree with `find()`, `depthOf()` and `packageIds()`) complete the read model. `users()` also manages users (`create()`, `update()`, `delete()`), substitutes (`substitutes()`, `substitutedUsers()`, `addSubstitute()`, `removeSubstitute()`), absences (`absences()`, `absencesOf()`, `createAbsence()`, `updateAbsence()`, `deleteAbsence()` and the batch variants) and the seat quota (`quota()`).
+Comments (`comments()`, `addComment()`), connections (`connections()`, `addConnection()`) and the project structure (`projects()->structure()`, a tree with `find()`, `depthOf()` and `packageIds()`) complete the read model. `users()` also manages users (`create()`, `update()`, `delete()`), substitutes (`substitutes()`, `substitutedUsers()`, `addSubstitute()`, `removeSubstitute()`), absences (`absences()`, `absencesOf()`, `createAbsence()`, `updateAbsence()`, `deleteAbsence()`, and the batch routes as `createAbsences()`/`updateAbsences()`, because `createMany()`/`updateMany()` of `users()` already batch users) and the seat quota (`quota()`).
 
 ## Checklists, tags, associations and access rights
 

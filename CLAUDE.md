@@ -29,7 +29,7 @@ Resource layout (see `docs/DECISIONS.md` 2026-09-14): `src/Resource/<Name>/` hol
 Conventions that span many files:
 
 - Output DTOs hydrate only through `Mapping\Field` (typed accessors, `HydrationException` on mismatch, no normalisation). `AbstractResource::rows()`/`object()` turn decoded bodies into string-keyed rows first.
-- Input DTOs build bodies through `toPayload(\DateTimeZone)` and `Mapping\Payload::withoutNulls()`: factro treats PUT as a partial update, so null means "not sent". Clearing a field is not supported.
+- Input DTOs build bodies through `toPayload(\DateTimeZone)` and `Mapping\Payload::withoutNulls()`: factro treats PUT as a partial update, so null means "not sent". Fields named in `$clear` (`TaskChanges`, `PackageChanges`, `ChecklistEntryChanges`, `NewTask`) are sent as explicit null via `Payload::withoutNullsExcept()`.
 - Dates: `Time\CalendarDate` for date-only fields (factro mixes `T22:00Z`, `T23:00Z` and `T00:00Z` for the same day; mapped via `FactroOptions::$timezone`, default Europe/Berlin), `Time\FactroDateTime` for timestamps.
 - Paths are written with a leading slash (`/tasks/{id}`, also in policy patterns), but `Transport` strips it internally so `base_uri` path segments survive. Test base URIs must end in `/`.
 - Enum cases UPPERCASE with spelled-out names (`IN_PROCESS`, `PRIORITY_10`), backing values as the API sends them.
