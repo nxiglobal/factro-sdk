@@ -64,16 +64,25 @@ final class FieldTest extends TestCase
         $this->assertHydrationError(static fn () => Field::int(['k' => '3'], 'k', self::OWNER), 'expected int, got string "3"');
     }
 
-    public function testEnumRejectsUnknownValue(): void
+    public function testEnumOrNullMapsUnknownValuesToNull(): void
     {
-        self::assertSame(TaskState::CLOSED, Field::enum(['k' => 'closed'], 'k', self::OWNER, TaskState::class));
-        self::assertSame(TaskPriority::PRIORITY_10, Field::nullableEnum(['k' => 10], 'k', self::OWNER, TaskPriority::class));
-        self::assertNull(Field::nullableEnum(['k' => null], 'k', self::OWNER, TaskPriority::class));
-        self::assertNull(Field::nullableEnum([], 'k', self::OWNER, TaskPriority::class));
-        $this->assertHydrationError(static fn () => Field::enum(['k' => 'archived'], 'k', self::OWNER, TaskState::class), 'expected TaskState, got string "archived"');
-        $this->assertHydrationError(static fn () => Field::enum([], 'k', self::OWNER, TaskState::class), 'expected TaskState, got null');
-        $this->assertHydrationError(static fn () => Field::nullableEnum(['k' => true], 'k', self::OWNER, TaskState::class), 'expected ?TaskState, got bool true');
-        $this->assertHydrationError(static fn () => Field::enum(['k' => 15], 'k', self::OWNER, TaskPriority::class), 'expected TaskPriority, got int 15');
+        self::assertSame(TaskState::CLOSED, Field::enumOrNull(['k' => 'closed'], 'k', self::OWNER, TaskState::class));
+        self::assertSame(TaskPriority::PRIORITY_10, Field::enumOrNull(['k' => 10], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull(['k' => null], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull([], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull(['k' => 'archived'], 'k', self::OWNER, TaskState::class));
+        self::assertNull(Field::enumOrNull(['k' => 15], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull(['k' => 'high'], 'k', self::OWNER, TaskPriority::class));
+        $this->assertHydrationError(static fn () => Field::enumOrNull(['k' => true], 'k', self::OWNER, TaskState::class), 'expected ?TaskState, got bool true');
+    }
+
+    public function testEnumValueKeepsTheRawValue(): void
+    {
+        self::assertSame('archived', Field::enumValue(['k' => 'archived'], 'k', self::OWNER));
+        self::assertSame(15, Field::enumValue(['k' => 15], 'k', self::OWNER));
+        self::assertNull(Field::nullableEnumValue([], 'k', self::OWNER));
+        $this->assertHydrationError(static fn () => Field::enumValue([], 'k', self::OWNER), 'expected int|string, got null');
+        $this->assertHydrationError(static fn () => Field::nullableEnumValue(['k' => 1.5], 'k', self::OWNER), 'expected ?int|string, got float 1.5');
     }
 
     public function testDateHelpers(): void

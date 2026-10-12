@@ -34,6 +34,21 @@ final class TasksTest extends TestCase
         self::assertContainsOnlyInstancesOf(Task::class, $tasks);
     }
 
+    public function testListByProjectKeepsRowsWithUnknownState(): void
+    {
+        $rows = Fixtures::json('tasks-by-project');
+        self::assertIsArray($rows[1]);
+        $rows[1]['taskState'] = 'archived';
+        $client = MockFactro::client(['GET /tasks/by-project/'.Id::P1 => new JsonMockResponse($rows)]);
+
+        $tasks = $client->tasks()->listByProject(Id::P1);
+
+        self::assertCount(5, $tasks);
+        self::assertNull($tasks[1]->taskState);
+        self::assertSame('archived', $tasks[1]->taskStateValue);
+        self::assertNotNull($tasks[0]->taskState);
+    }
+
     public function testGetAndFind(): void
     {
         $client = MockFactro::client([

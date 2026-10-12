@@ -16,7 +16,8 @@ final readonly class Comment
     public function __construct(
         public string $id,
         public string $referenceId,
-        public CommentReferenceType $referenceType,
+        public ?CommentReferenceType $referenceType,
+        public int|string $referenceTypeValue,
         public string $text,
         public string $creatorId,
         public ?string $parentId,
@@ -36,7 +37,8 @@ final readonly class Comment
         return new self(
             id: Field::string($data, 'id', $o),
             referenceId: Field::string($data, 'referenceId', $o),
-            referenceType: Field::enum($data, 'referenceType', $o, CommentReferenceType::class),
+            referenceType: Field::enumOrNull($data, 'referenceType', $o, CommentReferenceType::class),
+            referenceTypeValue: Field::enumValue($data, 'referenceType', $o),
             text: Field::string($data, 'text', $o),
             creatorId: Field::string($data, 'creatorId', $o),
             parentId: Field::nullableString($data, 'parentId', $o),

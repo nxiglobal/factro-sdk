@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Enum properties of output DTOs are nullable and get a raw `int|string` sibling named `<property>Value` (`Task::$taskState` and `$taskStateValue`, likewise `taskPriority`, `urgency`, `Project::$projectState`, `priority`, `User::$securityGroup`, `salutation`, `Contact::$salutation`, `Absence::$type`, `Comment::$referenceType`, `CustomView::$referenceType`, `viewType`, `ProjectStructureNode::$type`, `TodoListElement::$elementReferenceType`, `WorkRecord::$bookedOnReferenceType`). A value unknown to the SDK hydrates as `null` instead of throwing `HydrationException` for the whole list; a missing required value or a value that is neither int nor string still throws.
 - HTTP 403 throws the new `ForbiddenException` instead of `AuthenticationException`, which now means 401 (invalid token) only. `ForbiddenException` does not extend `AuthenticationException`.
 - A success response with invalid JSON or a JSON scalar throws `UnexpectedResponseException` (a `FactroRequestException`, so a `FactroException`) instead of `\JsonException` or `\UnexpectedValueException`.
 - `FactroDateTime::fromIsoUtc()` and `fromDateAndTime()` reject impossible dates and times (`2026-02-31`, `24:00`, `25:99`) instead of rolling them over or throwing `\DateMalformedStringException`. During hydration this surfaces as `HydrationException`.

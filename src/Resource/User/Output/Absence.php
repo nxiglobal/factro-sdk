@@ -17,7 +17,8 @@ final readonly class Absence
         public string $employeeId,
         public \DateTimeImmutable $startDate,
         public \DateTimeImmutable $endDate,
-        public AbsenceType $type,
+        public ?AbsenceType $type,
+        public int|string $typeValue,
         public string $mandantId,
     ) {
     }
@@ -34,7 +35,8 @@ final readonly class Absence
             employeeId: Field::string($data, 'employeeId', $o),
             startDate: Field::isoUtc($data, 'startDate', $o),
             endDate: Field::isoUtc($data, 'endDate', $o),
-            type: Field::enum($data, 'type', $o, AbsenceType::class),
+            type: Field::enumOrNull($data, 'type', $o, AbsenceType::class),
+            typeValue: Field::enumValue($data, 'type', $o),
             mandantId: Field::string($data, 'mandantId', $o),
         );
     }

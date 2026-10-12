@@ -50,10 +50,12 @@ final class CommentTest extends TestCase
         self::assertNull($comment->changeDate);
     }
 
-    public function testUnknownReferenceTypeThrows(): void
+    public function testUnknownReferenceTypeHydratesAsNullWithRawValue(): void
     {
-        $this->expectException(HydrationException::class);
-        Comment::fromArray(array_replace($this->row(), ['referenceType' => 'appointment']));
+        $comment = Comment::fromArray(array_replace($this->row(), ['referenceType' => 'appointment']));
+
+        self::assertNull($comment->referenceType);
+        self::assertSame('appointment', $comment->referenceTypeValue);
     }
 
     /** @return iterable<string, array{string}> */

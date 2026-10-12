@@ -151,19 +151,10 @@ final class Field
     }
 
     /**
-     * @template T of \BackedEnum
+     * The enum case for $data[$key]; null when the value is missing, null or unknown to this SDK version,
+     * so a value factro introduces later does not fail the whole response. The DTO keeps the raw value
+     * next to it (enumValue()/nullableEnumValue()). Throws only when the value is neither int nor string.
      *
-     * @param array<string, mixed> $data
-     * @param class-string<T>      $enum
-     *
-     * @return T
-     */
-    public static function enum(array $data, string $key, string $owner, string $enum): \BackedEnum
-    {
-        return self::tryEnum($data, $key, $owner, $enum, false) ?? throw new HydrationException($owner, $key, self::shortName($enum), null);
-    }
-
-    /**
      * @template T of \BackedEnum
      *
      * @param array<string, mixed> $data
@@ -171,9 +162,46 @@ final class Field
      *
      * @return T|null
      */
-    public static function nullableEnum(array $data, string $key, string $owner, string $enum): ?\BackedEnum
+    public static function enumOrNull(array $data, string $key, string $owner, string $enum): ?\BackedEnum
     {
-        return self::tryEnum($data, $key, $owner, $enum, true);
+        $value = $data[$key] ?? null;
+        if (null === $value) {
+            return null;
+        }
+        if (!is_int($value) && !is_string($value)) {
+            throw new HydrationException($owner, $key, '?'.self::shortName($enum), $value);
+        }
+        try {
+            return $enum::tryFrom($value);
+        } catch (\TypeError) {
+            // A string for an int-backed enum (or vice versa) is an unknown value, not a type mismatch.
+            return null;
+        }
+    }
+
+    /**
+     * Raw value of a required enum field as factro sends it.
+     *
+     * @param array<string, mixed> $data
+     */
+    public static function enumValue(array $data, string $key, string $owner): int|string
+    {
+        return self::nullableEnumValue($data, $key, $owner) ?? throw new HydrationException($owner, $key, 'int|string', null);
+    }
+
+    /**
+     * Raw value of an optional enum field as factro sends it.
+     *
+     * @param array<string, mixed> $data
+     */
+    public static function nullableEnumValue(array $data, string $key, string $owner): int|string|null
+    {
+        $value = $data[$key] ?? null;
+        if (null !== $value && !is_int($value) && !is_string($value)) {
+            throw new HydrationException($owner, $key, '?int|string', $value);
+        }
+
+        return $value;
     }
 
     /** @param array<string, mixed> $data */
@@ -272,33 +300,6 @@ final class Field
         }
 
         return $list;
-    }
-
-    /**
-     * @template T of \BackedEnum
-     *
-     * @param array<string, mixed> $data
-     * @param class-string<T>      $enum
-     *
-     * @return T|null
-     */
-    private static function tryEnum(array $data, string $key, string $owner, string $enum, bool $nullable): ?\BackedEnum
-    {
-        $value = $data[$key] ?? null;
-        if (null === $value) {
-            return null;
-        }
-        $expected = ($nullable ? '?' : '').self::shortName($enum);
-        if (!is_int($value) && !is_string($value)) {
-            throw new HydrationException($owner, $key, $expected, $value);
-        }
-        try {
-            $case = $enum::tryFrom($value);
-        } catch (\TypeError) {
-            $case = null;
-        }
-
-        return $case ?? throw new HydrationException($owner, $key, $expected, $value);
     }
 
     private static function shortName(string $class): string

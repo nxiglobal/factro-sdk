@@ -70,7 +70,7 @@ Nxi\Factro\Resource\Task\Input\NewTask, TaskChanges, NewTaskComment, TaskConnect
 Nxi\Factro\Resource\Task\Output\Task, TaskComment, TaskConnection
 ```
 
-`Project`, `Package`, `WorkRecord`, `User`, `Company`, `Contact`, `Appointment`, `Team`, `Document`, `Comment`, `Note`, `TodoList`, `Webhook`, `CustomView` and `Template` follow the same pattern. Enum cases are UPPERCASE (`TaskState::IN_PROCESS`, `TaskPriority::PRIORITY_50`). `Nxi\Factro\Http`, `Nxi\Factro\Mapping` and `Resource\AbstractResource` are `@internal`.
+`Project`, `Package`, `WorkRecord`, `User`, `Company`, `Contact`, `Appointment`, `Team`, `Document`, `Comment`, `Note`, `TodoList`, `Webhook`, `CustomView` and `Template` follow the same pattern. Enum cases are UPPERCASE (`TaskState::IN_PROCESS`, `TaskPriority::PRIORITY_50`). Enum properties of output DTOs are nullable and have a raw sibling (`$task->taskState` and `$task->taskStateValue`): a value this SDK version does not know yet hydrates as `null` with the raw value kept, instead of failing the whole response. `Nxi\Factro\Http`, `Nxi\Factro\Mapping` and `Resource\AbstractResource` are `@internal`.
 
 Operations that recur across resources share one naming scheme:
 

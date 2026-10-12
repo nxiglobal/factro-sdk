@@ -41,11 +41,11 @@ final class AbsenceTest extends TestCase
 
     public function testEveryTypeIsCoveredByTheListFixture(): void
     {
-        $types = array_map(static function (mixed $row): string {
+        $types = array_map(static function (mixed $row): int|string {
             self::assertIsArray($row);
 
             /* @var array<string, mixed> $row */
-            return Absence::fromArray($row)->type->value;
+            return Absence::fromArray($row)->typeValue;
         }, Fixtures::json('absences'));
 
         self::assertEqualsCanonicalizing(array_column(AbsenceType::cases(), 'value'), array_values(array_unique($types)));
@@ -77,12 +77,13 @@ final class AbsenceTest extends TestCase
         Absence::fromArray($row);
     }
 
-    public function testUnknownTypeThrows(): void
+    public function testUnknownTypeHydratesAsNullWithRawValue(): void
     {
         $row = $this->row();
         $row['type'] = 'Sick';
+        $absence = Absence::fromArray($row);
 
-        $this->expectException(HydrationException::class);
-        Absence::fromArray($row);
+        self::assertNull($absence->type);
+        self::assertSame('Sick', $absence->typeValue);
     }
 }
