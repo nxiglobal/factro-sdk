@@ -171,7 +171,7 @@ $client->workRecords()->create(new NewWorkRecord(
 | `inactivityTimeoutSeconds` | 10.0 | `timeout` (Symfony semantics: inactivity) |
 | `timezone` | `Europe/Berlin` | calendar days for `CalendarDate` fields in write DTOs |
 | `policy` | `RequestPolicy::all()` | allowed methods and denied path patterns |
-| `limiterFactory` | sliding window 480/min, `InMemoryStorage` | pass a factory with `CacheStorage` when several processes share one token |
+| `limiterFactory` | sliding window 480/min, `InMemoryStorage` shared by all clients of the process | one window per token within a PHP process; pass a factory with `CacheStorage` when several processes share one token |
 | `maxRetries` | 3 | GET only |
 | `maxRetryAfterSeconds` | 5 | longer `Retry-After` values surface as `RateLimitException` instead of blocking |
 | `logger` | `NullLogger` | one line per call |

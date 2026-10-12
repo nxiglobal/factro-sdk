@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The default rate limiter keeps one window per token across all clients of a PHP process. Before, every `FactroClientFactory::create()` got its own `InMemoryStorage`, so two clients with the same token could send up to 960 requests per minute together.
 - `RateLimitInfo::$limit`, `$windowSeconds` and `$resetSeconds` are `?int`: `null` means factro did not send the value, instead of `0`, which reads as "no requests allowed" or "resets now". `RateLimitException::retryAfterSeconds()` is `null` without `Retry-After` and without `t`.
 - `toPayload()` of every input DTO (and of `WorkRecordLocation` and `SortEntry`) is `@internal`: the body format follows the factro API and may change in minor releases. `isEmpty()` stays public.
 - Enum properties of output DTOs are nullable and get a raw `int|string` sibling named `<property>Value` (`Task::$taskState` and `$taskStateValue`, likewise `taskPriority`, `urgency`, `Project::$projectState`, `priority`, `User::$securityGroup`, `salutation`, `Contact::$salutation`, `Absence::$type`, `Comment::$referenceType`, `CustomView::$referenceType`, `viewType`, `ProjectStructureNode::$type`, `TodoListElement::$elementReferenceType`, `WorkRecord::$bookedOnReferenceType`). A value unknown to the SDK hydrates as `null` instead of throwing `HydrationException` for the whole list; a missing required value or a value that is neither int nor string still throws.

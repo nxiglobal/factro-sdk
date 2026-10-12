@@ -19,6 +19,8 @@ final class MockFactro
 {
     public const string BASE_URL = 'https://factro.test/api/core';
 
+    private static int $clients = 0;
+
     /**
      * @param array<string, ResponseInterface|\Closure(string, string, array<string, mixed>): ResponseInterface> $routes keyed by "METHOD /path"
      */
@@ -41,6 +43,7 @@ final class MockFactro
     {
         $options ??= new FactroOptions(baseUrl: self::BASE_URL, maxRetries: 0);
 
-        return FactroClientFactory::create('test-token', $options, self::http($routes));
+        // A token per client: the default rate limiter shares its window between clients with the same token.
+        return FactroClientFactory::create('test-token-'.++self::$clients, $options, self::http($routes));
     }
 }

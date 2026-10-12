@@ -23,6 +23,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class FactroClientFactory
 {
+    private static ?RateLimiterFactoryInterface $defaultLimiterFactory = null;
+
     private function __construct()
     {
     }
@@ -64,11 +66,12 @@ final class FactroClientFactory
 
     /**
      * Sliding window of 480 requests per minute per token, slightly below factro's limit of 500.
+     * The storage is shared by every client of this PHP process, so clients with the same token share one window.
      * Consumers running several PHP processes per token should pass a factory backed by CacheStorage.
      */
     public static function defaultLimiterFactory(): RateLimiterFactoryInterface
     {
-        return new RateLimiterFactory(
+        return self::$defaultLimiterFactory ??= new RateLimiterFactory(
             ['id' => 'factro', 'policy' => 'sliding_window', 'limit' => 480, 'interval' => '1 minute'],
             new InMemoryStorage(),
         );
