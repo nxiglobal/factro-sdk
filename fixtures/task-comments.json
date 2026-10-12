@@ -32,5 +32,16 @@
         "changeDate": null,
         "subComments": [],
         "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
+    },
+    {
+        "id": "4b1e9f3a-7c2d-5e8f-9a10-2b3c4d5e6f70",
+        "taskId": "e53f64f5-6dcc-5990-af50-e315dc575d1a",
+        "text": null,
+        "creatorId": "354912c9-4579-5834-ba5f-f039bf82268c",
+        "parentId": null,
+        "creationDate": "2026-10-05T14:51:55.436Z",
+        "changeDate": 1791211915436,
+        "subComments": [],
+        "mandantId": "9e30ce50-948c-50ae-9084-ffa402165b5b"
     }
 ]

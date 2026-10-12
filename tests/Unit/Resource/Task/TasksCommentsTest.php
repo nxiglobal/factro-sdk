@@ -34,7 +34,7 @@ final class TasksCommentsTest extends TestCase
         ]);
 
         $comments = $client->tasks()->comments('t1');
-        self::assertCount(2, $comments);
+        self::assertCount(3, $comments);
         self::assertContainsOnlyInstancesOf(TaskComment::class, $comments);
 
         $added = $client->tasks()->addComment('t1', new NewTaskComment('<p>Hi</p>'));

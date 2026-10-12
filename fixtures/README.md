@@ -33,7 +33,7 @@ request; never paste a real response.
 | `package.json` | `GET /packages/{id}` | |
 | `tasks-by-project.json` | `GET /tasks/by-project/{id}` | 5 tasks: `T22:00Z`, `T23:00Z`, `T00:00Z`, no dates, milestone |
 | `task.json` | `GET /tasks/{id}` | |
-| `task-comments.json` | `GET /tasks/{id}/comments` | 2 comments, one with `subComments` |
+| `task-comments.json` | `GET /tasks/{id}/comments` | 3 comments, one with `subComments`, one with `text: null` |
 | `task-connections.json` | `GET /tasks/{id}/task_connections` | empty list (live finding) |
 | `task-connections-synthetic.json` | `GET /tasks/{id}/task_connections` | one predecessor connection |
 | `users.json` | `GET /users` | 5 users: one per `securityGroup`, one inactive |

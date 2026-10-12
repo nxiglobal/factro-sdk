@@ -108,6 +108,16 @@ final class FieldTest extends TestCase
         $this->assertHydrationError(static fn () => Field::objectList(['k' => ['x']], 'k', self::OWNER, static fn (array $row): mixed => $row), 'expected list<array>, got array');
     }
 
+    public function testHydrationErrorCarriesActualType(): void
+    {
+        try {
+            Field::string(['k' => null], 'k', self::OWNER);
+            self::fail('expected HydrationException');
+        } catch (HydrationException $e) {
+            self::assertSame('null', $e->actualType);
+        }
+    }
+
     private function assertHydrationError(\Closure $call, string $expectedSuffix): void
     {
         try {

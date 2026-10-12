@@ -54,6 +54,24 @@ final class TaskCommentTest extends TestCase
         self::assertSame([], $comment->subComments);
     }
 
+    public function testNullText(): void
+    {
+        $comment = TaskComment::fromArray($this->row(2));
+
+        self::assertNull($comment->text);
+        self::assertSame('2026-10-05T14:51:55.436Z', FactroDateTime::toIsoUtc($comment->creationDate));
+        self::assertNotNull($comment->changeDate);
+    }
+
+    public function testNonStringTextThrows(): void
+    {
+        $row = $this->row();
+        $row['text'] = 42;
+
+        $this->expectException(HydrationException::class);
+        TaskComment::fromArray($row);
+    }
+
     public function testSubCommentsDefaultToEmptyList(): void
     {
         $comment = TaskComment::fromArray(['id' => 'c', 'taskId' => 't', 'text' => 'x', 'creatorId' => 'u', 'creationDate' => '2026-01-01T00:00:00.000Z', 'mandantId' => 'm']);
@@ -65,7 +83,7 @@ final class TaskCommentTest extends TestCase
     /** @return iterable<string, array{string}> */
     public static function requiredKeys(): iterable
     {
-        foreach (['id', 'taskId', 'text', 'creatorId', 'creationDate', 'mandantId'] as $key) {
+        foreach (['id', 'taskId', 'creatorId', 'creationDate', 'mandantId'] as $key) {
             yield $key => [$key];
         }
     }
