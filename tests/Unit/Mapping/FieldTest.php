@@ -64,6 +64,19 @@ final class FieldTest extends TestCase
         $this->assertHydrationError(static fn () => Field::int(['k' => '3'], 'k', self::OWNER), 'expected int, got string "3"');
     }
 
+    public function testIntRejectsFloatsOutsideTheIntRange(): void
+    {
+        foreach ([json_decode('1e400'), json_decode('-1e400'), 1e19, 9.3e18, NAN] as $value) {
+            try {
+                Field::int(['k' => $value], 'k', self::OWNER);
+                self::fail(sprintf('expected HydrationException for %s', var_export($value, true)));
+            } catch (HydrationException $e) {
+                self::assertSame('k', $e->field);
+            }
+        }
+        self::assertSame(PHP_INT_MIN, Field::int(['k' => (float) PHP_INT_MIN], 'k', self::OWNER));
+    }
+
     public function testEnumOrNullMapsUnknownValuesToNull(): void
     {
         self::assertSame(TaskState::CLOSED, Field::enumOrNull(['k' => 'closed'], 'k', self::OWNER, TaskState::class));

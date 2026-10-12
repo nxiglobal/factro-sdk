@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Integer fields reject floats outside the int range (`1e400`, `1e19`) with `HydrationException` instead of hydrating them as `0` or a wrapped negative number.
 - A retried 429 without `Retry-After` waits for `t` from the `ratelimit` header (capped at `maxRetryAfterSeconds`) instead of backing off exponentially from 500 ms into the same window.
 - The default rate limiter keeps one window per token across all clients of a PHP process. Before, every `FactroClientFactory::create()` got its own `InMemoryStorage`, so two clients with the same token could send up to 960 requests per minute together.
 - `RateLimitInfo::$limit`, `$windowSeconds` and `$resetSeconds` are `?int`: `null` means factro did not send the value, instead of `0`, which reads as "no requests allowed" or "resets now". `RateLimitException::retryAfterSeconds()` is `null` without `Retry-After` and without `t`.

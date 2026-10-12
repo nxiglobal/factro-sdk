@@ -71,7 +71,8 @@ final class Field
         if (null === $value || is_int($value)) {
             return $value;
         }
-        if (is_float($value) && floor($value) === $value) {
+        // (float) PHP_INT_MAX rounds up to 2^63, hence "<"; INF and NaN fail the range check too.
+        if (is_float($value) && floor($value) === $value && $value >= (float) PHP_INT_MIN && $value < (float) PHP_INT_MAX) {
             return (int) $value;
         }
 
