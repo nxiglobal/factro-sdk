@@ -8,6 +8,7 @@ use Nxi\Factro\Http\FactroRetryStrategy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\AsyncContext;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpClient\RetryableHttpClient;
 
@@ -110,5 +111,28 @@ final class FactroRetryStrategyTest extends TestCase
 
         self::assertSame('ok', $client->request('GET', 'https://factro.test/x')->getContent());
         self::assertCount(2, $this->sent);
+    }
+
+    public function testDelayOn429FollowsRatelimitResetWithoutRetryAfter(): void
+    {
+        $strategy = new FactroRetryStrategy(delayMs: 500, jitter: 0.0);
+
+        self::assertSame(4000, $strategy->getDelay($this->context(429, ['ratelimit: "500-in-1min"; r=0; t=4']), null, null));
+        self::assertSame(0, $strategy->getDelay($this->context(429, ['ratelimit: "500-in-1min"; r=0; t=0']), null, null));
+        self::assertSame(500, $strategy->getDelay($this->context(429, []), null, null));
+        self::assertSame(500, $strategy->getDelay($this->context(503, ['ratelimit: "500-in-1min"; r=0; t=4']), null, null));
+    }
+
+    /**
+     * @param list<string> $headers raw header lines
+     */
+    private function context(int $status, array $headers): AsyncContext
+    {
+        $info = ['http_code' => $status, 'response_headers' => $headers, 'retry_count' => 0];
+        $response = new MockHttpClient(new MockResponse('', $info))->request('GET', 'https://factro.test/x');
+        $response->getHeaders(false);
+        $passthru = null;
+
+        return new AsyncContext($passthru, new MockHttpClient(), $response, $info, null, 0);
     }
 }
