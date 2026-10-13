@@ -14,6 +14,7 @@ use Nxi\Factro\Resource\Template\Input\ApplyStructureTemplate;
 use Nxi\Factro\Resource\Template\Input\ProjectPropertyOverwrites;
 use Nxi\Factro\Resource\Template\Templates;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -27,54 +28,53 @@ final class TemplatesTest extends TestCase
     public function testStructureTemplateAccessRightsUseTheStructurePath(): void
     {
         $client = MockFactro::client([
-            'GET /templates/structure/st1/read_rights' => JsonMockResponse::fromFile(Fixtures::path('access-rights')),
-            'PUT /templates/structure/st1/team_write_rights' => static function (string $m, string $u, array $o): MockResponse {
+            'GET /templates/structure/'.Id::ST1.'/read_rights' => JsonMockResponse::fromFile(Fixtures::path('access-rights')),
+            'PUT /templates/structure/'.Id::ST1.'/team_write_rights' => static function (string $m, string $u, array $o): MockResponse {
                 self::assertIsString($o['body']);
-                self::assertJsonStringEqualsJsonString('{"teamId":"team1"}', $o['body']);
+                self::assertJsonStringEqualsJsonString('{"teamId":"'.Id::TEAM1.'"}', $o['body']);
 
                 return JsonMockResponse::fromFile(Fixtures::path('team-access-right'));
             },
         ]);
 
-        $rights = $client->templates()->structureTemplateAccessRights('st1');
+        $rights = $client->templates()->structureTemplateAccessRights(Id::ST1);
 
         self::assertInstanceOf(AccessRights::class, $rights);
         self::assertCount(3, $rights->readRights());
-        self::assertSame('c4d5e6f7-a8b9-5c0d-9e1f-3a4b5c6d7e8f', $rights->grantTeamWrite('team1')->teamId);
+        self::assertSame('c4d5e6f7-a8b9-5c0d-9e1f-3a4b5c6d7e8f', $rights->grantTeamWrite(Id::TEAM1)->teamId);
     }
 
     public function testTaskTemplateAccessRightsUseTheTaskPath(): void
     {
         $client = MockFactro::client([
-            'GET /templates/task/tp1/read_rights' => JsonMockResponse::fromFile(Fixtures::path('access-rights')),
-            'DELETE /templates/task/tp1/team_read_rights/team1' => new MockResponse('', ['http_code' => 204]),
+            'GET /templates/task/'.Id::TP1.'/read_rights' => JsonMockResponse::fromFile(Fixtures::path('access-rights')),
+            'DELETE /templates/task/'.Id::TP1.'/team_read_rights/'.Id::TEAM1 => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        $rights = $client->templates()->taskTemplateAccessRights('tp1');
+        $rights = $client->templates()->taskTemplateAccessRights(Id::TP1);
 
         self::assertInstanceOf(AccessRights::class, $rights);
         self::assertCount(3, $rights->readRights());
-        $rights->revokeTeamRead('team1');
+        $rights->revokeTeamRead(Id::TEAM1);
         $this->addToAssertionCount(1);
     }
 
-    public function testTemplateIdsAreUrlEncodedInAccessRightPaths(): void
+    public function testNonUuidTemplateIdIsRejectedBeforeSending(): void
     {
-        $client = MockFactro::client(['GET /templates/task/a%2Fb/write_rights' => new JsonMockResponse([])]);
-
-        self::assertSame([], $client->templates()->taskTemplateAccessRights('a/b')->writeRights());
+        $this->expectException(\InvalidArgumentException::class);
+        MockFactro::client([])->templates()->taskTemplateAccessRights('a/b');
     }
 
     public function testApplyStructureTemplatePostsFullBodyAndReturnsProject(): void
     {
-        $client = MockFactro::client(['POST /templates/structure/st1/apply_template' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['POST /templates/structure/'.Id::ST1.'/apply_template' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(json_encode([
-                'targetParentId' => 'p1',
+                'targetParentId' => Id::P1,
                 'additionalAccessRights' => [
-                    'directWriteTeamIds' => ['team1'],
+                    'directWriteTeamIds' => [Id::TEAM1],
                     'directReadTeamIds' => [],
-                    'directWriteEmployeeIds' => ['e1', 'e2'],
+                    'directWriteEmployeeIds' => [Id::E1, 'e2'],
                     'directReadEmployeeIds' => [],
                 ],
                 'additionalCustomFieldAssignments' => ['cf1'],
@@ -95,9 +95,9 @@ final class TemplatesTest extends TestCase
             return JsonMockResponse::fromFile(Fixtures::path('project'));
         }]);
 
-        $project = $client->templates()->applyStructureTemplate('st1', new ApplyStructureTemplate(
-            targetParentId: 'p1',
-            additionalAccessRights: new AdditionalAccessRights(directWriteTeamIds: ['team1'], directWriteEmployeeIds: ['e1', 'e2']),
+        $project = $client->templates()->applyStructureTemplate(Id::ST1, new ApplyStructureTemplate(
+            targetParentId: Id::P1,
+            additionalAccessRights: new AdditionalAccessRights(directWriteTeamIds: [Id::TEAM1], directWriteEmployeeIds: [Id::E1, 'e2']),
             additionalCustomFieldAssignments: ['cf1'],
             projectPropertyOverwrites: new ProjectPropertyOverwrites(
                 title: 'New',
@@ -119,25 +119,25 @@ final class TemplatesTest extends TestCase
 
     public function testApplyStructureTemplateWithoutOptionsSendsEmptyObject(): void
     {
-        $client = MockFactro::client(['POST /templates/structure/st1/apply_template' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['POST /templates/structure/'.Id::ST1.'/apply_template' => static function (string $m, string $u, array $o): MockResponse {
             self::assertSame('{}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('project'));
         }]);
 
-        self::assertInstanceOf(Project::class, $client->templates()->applyStructureTemplate('st1', new ApplyStructureTemplate()));
+        self::assertInstanceOf(Project::class, $client->templates()->applyStructureTemplate(Id::ST1, new ApplyStructureTemplate()));
     }
 
     public function testApplyTaskTemplatePostsTargetParentIdAndReturnsTask(): void
     {
-        $client = MockFactro::client(['POST /templates/task/tp1/apply_template' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['POST /templates/task/'.Id::TP1.'/apply_template' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"targetParentId":"pkg1"}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('task'));
         }]);
 
-        $task = $client->templates()->applyTaskTemplate('tp1', 'pkg1');
+        $task = $client->templates()->applyTaskTemplate(Id::TP1, 'pkg1');
 
         self::assertInstanceOf(Task::class, $task);
         self::assertSame('e53f64f5-6dcc-5990-af50-e315dc575d1a', $task->id);
@@ -145,12 +145,12 @@ final class TemplatesTest extends TestCase
 
     public function testApplyTaskTemplateWithoutTargetSendsEmptyObject(): void
     {
-        $client = MockFactro::client(['POST /templates/task/tp1/apply_template' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['POST /templates/task/'.Id::TP1.'/apply_template' => static function (string $m, string $u, array $o): MockResponse {
             self::assertSame('{}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('task'));
         }]);
 
-        self::assertInstanceOf(Task::class, $client->templates()->applyTaskTemplate('tp1'));
+        self::assertInstanceOf(Task::class, $client->templates()->applyTaskTemplate(Id::TP1));
     }
 }

@@ -17,7 +17,8 @@ final readonly class ProjectStructureNode
      */
     public function __construct(
         public string $id,
-        public StructureNodeType $type,
+        public ?StructureNodeType $type,
+        public int|string $typeValue,
         public array $children,
     ) {
     }
@@ -31,7 +32,8 @@ final readonly class ProjectStructureNode
 
         return new self(
             id: Field::string($data, 'id', $o),
-            type: Field::enum($data, 'type', $o, StructureNodeType::class),
+            type: Field::enumOrNull($data, 'type', $o, StructureNodeType::class),
+            typeValue: Field::enumValue($data, 'type', $o),
             children: Field::objectList($data, 'children', $o, self::fromArray(...)),
         );
     }

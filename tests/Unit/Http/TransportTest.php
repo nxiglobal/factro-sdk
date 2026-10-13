@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Tests\Unit\Http;
 
+use Nxi\Factro\Exception\FactroException;
 use Nxi\Factro\Exception\NotFoundException;
 use Nxi\Factro\Exception\ServerException;
 use Nxi\Factro\Exception\TransportException;
+use Nxi\Factro\Exception\UnexpectedResponseException;
 use Nxi\Factro\FactroOptions;
 use Nxi\Factro\Http\Transport;
 use Nxi\Factro\RateLimitInfo;
 use Nxi\Factro\Tests\Support\RecordingLogger;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -65,12 +68,23 @@ final class TransportTest extends TestCase
         self::assertNull($transport->request('PUT', '/tasks/abc/state', json: ['state' => 'closed']));
     }
 
-    public function testJsonScalarIsRejected(): void
+    #[TestWith(['42'])]
+    #[TestWith(['<html><body>Bad Gateway</body></html>'])]
+    #[TestWith(['{"id":'])]
+    public function testUndecodableBodyThrowsUnexpectedResponseException(string $body): void
     {
-        $transport = $this->transport(new MockResponse('42', ['http_code' => 200]));
+        $transport = $this->transport(new MockResponse($body, ['http_code' => 200]));
 
-        $this->expectException(\UnexpectedValueException::class);
-        $transport->request('GET', '/tasks/abc');
+        try {
+            $transport->request('GET', '/tasks/abc');
+            self::fail('Expected UnexpectedResponseException.');
+        } catch (UnexpectedResponseException $e) {
+            self::assertInstanceOf(FactroException::class, $e);
+            self::assertSame('GET', $e->method);
+            self::assertSame('/tasks/abc', $e->path);
+            self::assertSame(200, $e->statusCode);
+            self::assertSame($body, $e->rawBody);
+        }
     }
 
     public function testErrorStatusIsMapped(): void

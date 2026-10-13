@@ -72,12 +72,13 @@ final class TodoListElementTest extends TestCase
         TodoListElement::fromArray($row);
     }
 
-    public function testUnknownReferenceTypeThrows(): void
+    public function testUnknownReferenceTypeHydratesAsNullWithRawValue(): void
     {
         $row = $this->row();
         $row['elementReferenceType'] = 'meeting';
+        $element = TodoListElement::fromArray($row);
 
-        $this->expectException(HydrationException::class);
-        TodoListElement::fromArray($row);
+        self::assertNull($element->elementReferenceType);
+        self::assertSame('meeting', $element->elementReferenceTypeValue);
     }
 }

@@ -7,11 +7,13 @@ namespace Nxi\Factro\Http;
 use Nxi\Factro\Exception\FactroException;
 use Nxi\Factro\Exception\FactroRequestException;
 use Nxi\Factro\Exception\NotFoundException;
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\Exception\TransportException;
+use Nxi\Factro\Exception\UnexpectedResponseException;
 use Nxi\Factro\FactroOptions;
-use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\RateLimitInfo;
 use Psr\Log\LogLevel;
+use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -34,14 +36,29 @@ final readonly class Transport
     }
 
     /**
+     * Keeps the token out of print_r() and var_dump(): the decorated client carries it in its default headers.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo(): array
+    {
+        return [
+            'baseUrl' => $this->options->baseUrl,
+            'policy' => $this->options->policy,
+            'timezone' => $this->options->timezone->getName(),
+            'userAgent' => $this->options->userAgent,
+        ];
+    }
+
+    /**
      * @param array<string, scalar> $query
-     * @param MultipartBody|null    $multipart a multipart/form-data body (document uploads); mutually exclusive with $json
+     * @param FormDataPart|null     $multipart a multipart/form-data body (document uploads); mutually exclusive with $json
      *
      * @return array<mixed>|null decoded JSON; null for 204 or an empty body
      *
-     * @throws FactroRequestException|TransportException|OperationNotPermittedException|\JsonException
+     * @throws FactroRequestException|TransportException|OperationNotPermittedException
      */
-    public function request(string $method, string $path, array $query = [], mixed $json = null, ?MultipartBody $multipart = null): ?array
+    public function request(string $method, string $path, array $query = [], mixed $json = null, ?FormDataPart $multipart = null): ?array
     {
         $this->assertRelativePath($path);
         $method = strtoupper($method);
@@ -53,8 +70,8 @@ final readonly class Transport
             $requestOptions['json'] = $json;
         }
         if (null !== $multipart) {
-            $requestOptions['body'] = $multipart->content;
-            $requestOptions['headers'] = ['Content-Type' => $multipart->contentType()];
+            $requestOptions['body'] = $multipart->bodyToString();
+            $requestOptions['headers'] = $multipart->getPreparedHeaders()->toArray();
         }
 
         try {
@@ -127,9 +144,13 @@ final readonly class Transport
         if ('' === trim($body)) {
             return null;
         }
-        $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new UnexpectedResponseException(sprintf('factro returned invalid JSON for %s %s (HTTP %d).', $method, $path, $status), $method, $path, $status, $body, $headers, $e);
+        }
         if (!is_array($decoded)) {
-            throw new \UnexpectedValueException(sprintf('factro returned a JSON scalar for %s %s', $method, $path));
+            throw new UnexpectedResponseException(sprintf('factro returned a JSON scalar for %s %s (HTTP %d).', $method, $path, $status), $method, $path, $status, $body, $headers);
         }
 
         return $decoded;

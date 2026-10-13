@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Resource\Document\Input;
 
-use Nxi\Factro\Http\MultipartBody;
+use Symfony\Component\Mime\Part\DataPart;
+use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 
 /**
  * A file for POST /tasks/{id}/documents, /projects/{id}/documents and /projects/{id}/packages/{pid}/documents.
@@ -24,6 +25,10 @@ final readonly class DocumentUpload
         if ('' === trim($filename)) {
             throw new \InvalidArgumentException('DocumentUpload needs a file name.');
         }
+        // type/subtype with optional parameters; \z instead of $, which would accept a trailing "\n"
+        if (1 !== preg_match('~^[\w!#$&^.+-]+/[\w!#$&^.+-]+(;[^\x00-\x1F\x7F]*)?\z~', $contentType)) {
+            throw new \InvalidArgumentException(sprintf('DocumentUpload needs a media type like "application/pdf", got "%s".', addcslashes($contentType, "\0..\37\177")));
+        }
     }
 
     /**
@@ -40,10 +45,13 @@ final readonly class DocumentUpload
     }
 
     /**
-     * @internal
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
      */
-    public function toMultipart(): MultipartBody
+    public function toMultipart(): FormDataPart
     {
-        return MultipartBody::file(self::FIELD, $this->filename, $this->content, $this->contentType);
+        // symfony/mime would percent-encode these characters; stripping keeps the names factro stores
+        $filename = str_replace(['"', "\r", "\n"], '', $this->filename);
+
+        return new FormDataPart([self::FIELD => new DataPart($this->content, $filename, $this->contentType)]);
     }
 }

@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\Task\TaskPriority;
 use Nxi\Factro\Resource\Task\Urgency;
 use Nxi\Factro\Time\CalendarDate;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(TaskChanges::class)]
@@ -42,5 +43,34 @@ final class TaskChangesTest extends TestCase
     {
         self::assertSame(['urgency' => 'overdue'], new TaskChanges(urgency: Urgency::OVERDUE)->toPayload(new \DateTimeZone('UTC')));
         self::assertFalse(new TaskChanges(urgency: Urgency::NORMAL)->isEmpty());
+    }
+
+    public function testClearedFieldsAreSentAsNull(): void
+    {
+        $changes = new TaskChanges(title: 'x', clear: ['colorScheme', 'executorId']);
+
+        self::assertSame(['title' => 'x', 'colorScheme' => null, 'executorId' => null], $changes->toPayload(new \DateTimeZone('UTC')));
+        self::assertFalse(new TaskChanges(clear: ['colorScheme'])->isEmpty());
+    }
+
+    /**
+     * @param list<string> $clear
+     */
+    #[DataProvider('invalidClears')]
+    public function testAnInvalidClearIsRejectedOnConstruction(array $clear, ?string $colorScheme): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new TaskChanges(colorScheme: $colorScheme, clear: $clear);
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, ?string}>
+     */
+    public static function invalidClears(): iterable
+    {
+        yield 'unknown key' => [['colour'], null];
+        yield 'refused by factro with 403' => [['officerId'], null];
+        yield 'set and cleared at once' => [['colorScheme'], 'red'];
     }
 }

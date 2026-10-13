@@ -25,6 +25,16 @@ final class FactroClientFactoryTest extends TestCase
         self::assertSame(480, $limit->getLimit());
     }
 
+    public function testDefaultLimiterIsSharedPerTokenWithinTheProcess(): void
+    {
+        $token = hash('sha256', uniqid('', true));
+        $other = hash('sha256', uniqid('', true));
+
+        self::assertTrue(FactroClientFactory::defaultLimiterFactory()->create($token)->consume(480)->isAccepted());
+        self::assertFalse(FactroClientFactory::defaultLimiterFactory()->create($token)->consume(1)->isAccepted());
+        self::assertTrue(FactroClientFactory::defaultLimiterFactory()->create($other)->consume(1)->isAccepted());
+    }
+
     public function testUsesGivenHttpClientAsBase(): void
     {
         $seen = [];
@@ -75,5 +85,18 @@ final class FactroClientFactoryTest extends TestCase
 
         self::assertSame(7.5, $seen['max_duration']);
         self::assertSame(2.5, $seen['timeout']);
+    }
+
+    public function testDebugOutputHidesToken(): void
+    {
+        $client = FactroClientFactory::create('SECRET-TOKEN');
+
+        ob_start();
+        var_dump($client);
+        $dump = (string) ob_get_clean();
+
+        self::assertStringNotContainsString('SECRET-TOKEN', print_r($client, true));
+        self::assertStringNotContainsString('SECRET-TOKEN', $dump);
+        self::assertStringContainsString('https://cloud.factro.com/api/core', $dump);
     }
 }

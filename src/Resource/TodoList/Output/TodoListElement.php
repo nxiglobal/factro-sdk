@@ -16,7 +16,8 @@ final readonly class TodoListElement
         public string $id,
         public \DateTimeImmutable $createdAt,
         public bool $checked,
-        public ListElementReferenceType $elementReferenceType,
+        public ?ListElementReferenceType $elementReferenceType,
+        public int|string $elementReferenceTypeValue,
         public ?string $nextListElementId,
         public TodoListReferencedElement $referencedElement,
     ) {
@@ -33,7 +34,8 @@ final readonly class TodoListElement
             id: Field::string($data, 'id', $o),
             createdAt: Field::isoUtc($data, 'createdAt', $o),
             checked: Field::bool($data, 'checked', $o),
-            elementReferenceType: Field::enum($data, 'elementReferenceType', $o, ListElementReferenceType::class),
+            elementReferenceType: Field::enumOrNull($data, 'elementReferenceType', $o, ListElementReferenceType::class),
+            elementReferenceTypeValue: Field::enumValue($data, 'elementReferenceType', $o),
             nextListElementId: Field::nullableString($data, 'nextListElementId', $o),
             // A missing object yields [] and the nested required-field check reports the gap.
             referencedElement: TodoListReferencedElement::fromArray(Field::array($data, 'referencedElement', $o)),

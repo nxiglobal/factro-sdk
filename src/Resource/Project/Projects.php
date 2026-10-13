@@ -34,7 +34,7 @@ final class Projects extends AbstractResource
      */
     public function get(string $projectId): Project
     {
-        return Project::fromArray($this->object($this->transport->request('GET', '/projects/'.rawurlencode($projectId))));
+        return Project::fromArray($this->object($this->transport->request('GET', '/projects/'.self::id($projectId))));
     }
 
     /**
@@ -54,7 +54,7 @@ final class Projects extends AbstractResource
      */
     public function structure(string $projectId): ProjectStructureNode
     {
-        return ProjectStructureNode::fromArray($this->object($this->transport->request('GET', '/projects/'.rawurlencode($projectId).'/structure')));
+        return ProjectStructureNode::fromArray($this->object($this->transport->request('GET', '/projects/'.self::id($projectId).'/structure')));
     }
 
     /**
@@ -74,7 +74,7 @@ final class Projects extends AbstractResource
             throw new \InvalidArgumentException('ProjectChanges must set at least one field.');
         }
 
-        return Project::fromArray($this->object($this->transport->request('PUT', '/projects/'.rawurlencode($projectId), json: $changes->toPayload($this->options->timezone))));
+        return Project::fromArray($this->object($this->transport->request('PUT', '/projects/'.self::id($projectId), json: $changes->toPayload($this->options->timezone))));
     }
 
     /**
@@ -82,7 +82,7 @@ final class Projects extends AbstractResource
      */
     public function delete(string $projectId): void
     {
-        $this->transport->request('DELETE', '/projects/'.rawurlencode($projectId));
+        $this->transport->request('DELETE', '/projects/'.self::id($projectId));
     }
 
     /**
@@ -151,7 +151,7 @@ final class Projects extends AbstractResource
      */
     public function deleteProjectTag(string $tagId): void
     {
-        $this->transport->request('DELETE', '/projects/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/projects/tags/'.self::id($tagId));
     }
 
     /**
@@ -161,7 +161,7 @@ final class Projects extends AbstractResource
      */
     public function tags(string $projectId): array
     {
-        return array_map(ProjectTag::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.rawurlencode($projectId).'/tags')));
+        return array_map(ProjectTag::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.self::id($projectId).'/tags')));
     }
 
     /**
@@ -169,7 +169,7 @@ final class Projects extends AbstractResource
      */
     public function addTag(string $projectId, string $tagId): void
     {
-        $this->transport->request('PUT', '/projects/'.rawurlencode($projectId).'/tags', json: ['tagId' => $tagId]);
+        $this->transport->request('PUT', '/projects/'.self::id($projectId).'/tags', json: ['tagId' => $tagId]);
     }
 
     /**
@@ -177,7 +177,7 @@ final class Projects extends AbstractResource
      */
     public function removeTag(string $projectId, string $tagId): void
     {
-        $this->transport->request('DELETE', '/projects/'.rawurlencode($projectId).'/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/projects/'.self::id($projectId).'/tags/'.self::id($tagId));
     }
 
     /**
@@ -185,7 +185,7 @@ final class Projects extends AbstractResource
      */
     public function setCompany(string $projectId, string $companyId): void
     {
-        $this->transport->request('PUT', '/projects/'.rawurlencode($projectId).'/company', json: ['companyId' => $companyId]);
+        $this->transport->request('PUT', '/projects/'.self::id($projectId).'/company', json: ['companyId' => $companyId]);
     }
 
     /**
@@ -193,7 +193,7 @@ final class Projects extends AbstractResource
      */
     public function removeCompany(string $projectId): void
     {
-        $this->transport->request('DELETE', '/projects/'.rawurlencode($projectId).'/company');
+        $this->transport->request('DELETE', '/projects/'.self::id($projectId).'/company');
     }
 
     /**
@@ -201,7 +201,7 @@ final class Projects extends AbstractResource
      */
     public function setContact(string $projectId, string $contactId): void
     {
-        $this->transport->request('PUT', '/projects/'.rawurlencode($projectId).'/contact', json: ['contactId' => $contactId]);
+        $this->transport->request('PUT', '/projects/'.self::id($projectId).'/contact', json: ['contactId' => $contactId]);
     }
 
     /**
@@ -209,7 +209,7 @@ final class Projects extends AbstractResource
      */
     public function removeContact(string $projectId): void
     {
-        $this->transport->request('DELETE', '/projects/'.rawurlencode($projectId).'/contact');
+        $this->transport->request('DELETE', '/projects/'.self::id($projectId).'/contact');
     }
 
     /**
@@ -219,7 +219,7 @@ final class Projects extends AbstractResource
      */
     public function comments(string $projectId): array
     {
-        return array_map(ProjectComment::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.rawurlencode($projectId).'/comments')));
+        return array_map(ProjectComment::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.self::id($projectId).'/comments')));
     }
 
     /**
@@ -227,7 +227,7 @@ final class Projects extends AbstractResource
      */
     public function comment(string $projectId, string $commentId): ProjectComment
     {
-        return ProjectComment::fromArray($this->object($this->transport->request('GET', '/projects/'.rawurlencode($projectId).'/comments/'.rawurlencode($commentId))));
+        return ProjectComment::fromArray($this->object($this->transport->request('GET', '/projects/'.self::id($projectId).'/comments/'.self::id($commentId))));
     }
 
     /**
@@ -235,7 +235,7 @@ final class Projects extends AbstractResource
      */
     public function addComment(string $projectId, NewProjectComment $comment): ProjectComment
     {
-        return ProjectComment::fromArray($this->object($this->transport->request('POST', '/projects/'.rawurlencode($projectId).'/comments', json: $comment->toPayload())));
+        return ProjectComment::fromArray($this->object($this->transport->request('POST', '/projects/'.self::id($projectId).'/comments', json: $comment->toPayload())));
     }
 
     /**
@@ -243,7 +243,7 @@ final class Projects extends AbstractResource
      */
     public function deleteComment(string $projectId, string $commentId): void
     {
-        $this->transport->request('DELETE', '/projects/'.rawurlencode($projectId).'/comments/'.rawurlencode($commentId));
+        $this->transport->request('DELETE', '/projects/'.self::id($projectId).'/comments/'.self::id($commentId));
     }
 
     /**
@@ -253,7 +253,7 @@ final class Projects extends AbstractResource
      */
     public function documents(string $projectId): array
     {
-        return array_map(Document::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.rawurlencode($projectId).'/documents')));
+        return array_map(Document::fromArray(...), $this->rows($this->transport->request('GET', '/projects/'.self::id($projectId).'/documents')));
     }
 
     /**
@@ -261,7 +261,7 @@ final class Projects extends AbstractResource
      */
     public function addDocument(string $projectId, DocumentUpload $upload): Document
     {
-        return Document::fromArray($this->object($this->transport->request('POST', '/projects/'.rawurlencode($projectId).'/documents', multipart: $upload->toMultipart())));
+        return Document::fromArray($this->object($this->transport->request('POST', '/projects/'.self::id($projectId).'/documents', multipart: $upload->toMultipart())));
     }
 
     /**
@@ -269,7 +269,7 @@ final class Projects extends AbstractResource
      */
     public function removeDocument(string $projectId, string $documentId): void
     {
-        $this->transport->request('DELETE', '/projects/'.rawurlencode($projectId).'/documents/'.rawurlencode($documentId));
+        $this->transport->request('DELETE', '/projects/'.self::id($projectId).'/documents/'.self::id($documentId));
     }
 
     /**
@@ -277,7 +277,7 @@ final class Projects extends AbstractResource
      */
     public function accessRights(string $projectId): AccessRights
     {
-        $path = '/projects/'.rawurlencode($projectId);
+        $path = '/projects/'.self::id($projectId);
 
         return new AccessRights($this->transport, $this->options, $path, $path);
     }

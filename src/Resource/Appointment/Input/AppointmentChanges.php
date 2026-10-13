@@ -25,6 +25,8 @@ final readonly class AppointmentChanges
     }
 
     /**
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array<string, mixed>
      */
     public function toPayload(): array

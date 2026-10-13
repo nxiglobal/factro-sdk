@@ -6,6 +6,7 @@ namespace Nxi\Factro\Tests\Unit\Http;
 
 use Nxi\Factro\Exception\AuthenticationException;
 use Nxi\Factro\Exception\FactroRequestException;
+use Nxi\Factro\Exception\ForbiddenException;
 use Nxi\Factro\Exception\NotFoundException;
 use Nxi\Factro\Exception\RateLimitException;
 use Nxi\Factro\Exception\ServerException;
@@ -24,7 +25,7 @@ final class ErrorMapperTest extends TestCase
     {
         yield '400' => [400, ValidationException::class];
         yield '401' => [401, AuthenticationException::class];
-        yield '403' => [403, AuthenticationException::class];
+        yield '403' => [403, ForbiddenException::class];
         yield '404' => [404, NotFoundException::class];
         yield '409' => [409, FactroRequestException::class];
         yield '422' => [422, ValidationException::class];
@@ -44,6 +45,13 @@ final class ErrorMapperTest extends TestCase
         self::assertSame('GET', $e->method);
         self::assertSame('/tasks/1', $e->path);
         self::assertSame("factro responded with HTTP {$status} to GET /tasks/1", $e->getMessage());
+    }
+
+    public function testForbiddenIsNotAnAuthenticationFailure(): void
+    {
+        $e = new ErrorMapper()->fromResponse('PUT', '/tasks/1', 403, '', []);
+
+        self::assertNotInstanceOf(AuthenticationException::class, $e);
     }
 
     public function testUsesFactroMessageWhenPresent(): void

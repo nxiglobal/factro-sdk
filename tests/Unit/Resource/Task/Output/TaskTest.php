@@ -81,7 +81,7 @@ final class TaskTest extends TestCase
         self::assertNull($tasks[3]->executorId);
         self::assertNull($tasks[3]->startDate);
         self::assertTrue($tasks[4]->isMilestone);
-        self::assertFalse($tasks[4]->taskState->isOpen());
+        self::assertFalse($tasks[4]->taskState?->isOpen());
     }
 
     public function testDateVariantsMapToTheSameCalendarDay(): void
@@ -122,13 +122,22 @@ final class TaskTest extends TestCase
         Task::fromArray($row);
     }
 
-    public function testUnknownTaskStateThrowsHydrationException(): void
+    public function testUnknownTaskStateHydratesAsNullWithRawValue(): void
     {
         $row = $this->row();
         $row['taskState'] = 'archived';
+        $task = Task::fromArray($row);
+
+        self::assertNull($task->taskState);
+        self::assertSame('archived', $task->taskStateValue);
+    }
+
+    public function testMissingTaskStateThrowsHydrationException(): void
+    {
+        $row = $this->row();
+        unset($row['taskState']);
 
         $this->expectException(HydrationException::class);
-        $this->expectExceptionMessage('expected TaskState, got string "archived"');
         Task::fromArray($row);
     }
 

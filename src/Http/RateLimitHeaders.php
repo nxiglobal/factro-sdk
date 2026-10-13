@@ -32,10 +32,10 @@ final class RateLimitHeaders
         [$quotaFromName, $windowFromName] = self::parsePolicyName($limit['name']);
 
         return new RateLimitInfo(
-            limit: $policy['params']['q'] ?? $quotaFromName ?? 0,
+            limit: $policy['params']['q'] ?? $quotaFromName,
             remaining: $limit['params']['r'],
-            windowSeconds: $policy['params']['w'] ?? $windowFromName ?? 0,
-            resetSeconds: $limit['params']['t'] ?? 0,
+            windowSeconds: $policy['params']['w'] ?? $windowFromName,
+            resetSeconds: $limit['params']['t'] ?? null,
             policyName: $limit['name'],
         );
     }

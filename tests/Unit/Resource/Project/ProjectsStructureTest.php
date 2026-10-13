@@ -8,6 +8,7 @@ use Nxi\Factro\Resource\Project\Output\ProjectStructureNode;
 use Nxi\Factro\Resource\Project\Projects;
 use Nxi\Factro\Resource\Project\StructureNodeType;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -18,9 +19,9 @@ final class ProjectsStructureTest extends TestCase
 {
     public function testStructureReturnsTheRootNode(): void
     {
-        $client = MockFactro::client(['GET /projects/p1/structure' => JsonMockResponse::fromFile(Fixtures::path('project-structure'))]);
+        $client = MockFactro::client(['GET /projects/'.Id::P1.'/structure' => JsonMockResponse::fromFile(Fixtures::path('project-structure'))]);
 
-        $root = $client->projects()->structure('p1');
+        $root = $client->projects()->structure(Id::P1);
 
         self::assertInstanceOf(ProjectStructureNode::class, $root);
         self::assertSame(StructureNodeType::PROJECT, $root->type);

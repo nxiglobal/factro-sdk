@@ -105,12 +105,13 @@ final class CustomViewTest extends TestCase
         CustomView::fromArray($row);
     }
 
-    public function testUnknownViewTypeThrows(): void
+    public function testUnknownViewTypeHydratesAsNullWithRawValue(): void
     {
         $row = $this->row();
         $row['viewType'] = 'Timeline';
+        $view = CustomView::fromArray($row);
 
-        $this->expectException(HydrationException::class);
-        CustomView::fromArray($row);
+        self::assertNull($view->viewType);
+        self::assertSame('Timeline', $view->viewTypeValue);
     }
 }

@@ -66,4 +66,32 @@ final class NewTaskTest extends TestCase
 
         self::assertSame(['title' => 'T', 'targetParentId' => 'pkg', 'isMilestone' => false, 'urgency' => 'due'], $payload);
     }
+
+    public function testAClearedExecutorIsSentAsNull(): void
+    {
+        $payload = new NewTask('T', 'pkg', clear: ['executorId'])->toPayload(new \DateTimeZone('UTC'), new MockClock(), sendCreationDate: false);
+
+        self::assertSame(['title' => 'T', 'targetParentId' => 'pkg', 'isMilestone' => false, 'executorId' => null], $payload);
+    }
+
+    public function testARequiredFieldCannotBeCleared(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new NewTask('T', 'pkg', clear: ['title']);
+    }
+
+    public function testAnUnverifiedFieldIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new NewTask('T', 'pkg', clear: ['officerId']);
+    }
+
+    public function testAFieldSetAndClearedAtOnceIsRejectedOnConstruction(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new NewTask('T', 'pkg', executorId: 'u', clear: ['executorId']);
+    }
 }

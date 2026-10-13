@@ -26,6 +26,8 @@ final readonly class AdditionalAccessRights
     }
 
     /**
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array<string, list<string>>
      */
     public function toPayload(): array

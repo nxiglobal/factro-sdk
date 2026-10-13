@@ -9,6 +9,7 @@ use Nxi\Factro\Resource\WorkRecord\Input\NewWorkRecordComment;
 use Nxi\Factro\Resource\WorkRecord\Output\WorkRecordComment;
 use Nxi\Factro\Resource\WorkRecord\WorkRecords;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -20,13 +21,13 @@ final class WorkRecordsCommentsTest extends TestCase
 {
     public function testCommentsListsFixture(): void
     {
-        $client = MockFactro::client(['GET /work-records/w1/comments' => static function (string $m, string $u): MockResponse {
-            self::assertSame(MockFactro::BASE_URL.'/work-records/w1/comments', $u);
+        $client = MockFactro::client(['GET /work-records/'.Id::W1.'/comments' => static function (string $m, string $u): MockResponse {
+            self::assertSame(MockFactro::BASE_URL.'/work-records/'.Id::W1.'/comments', $u);
 
             return JsonMockResponse::fromFile(Fixtures::path('work-record-comments'));
         }]);
 
-        $comments = $client->workRecords()->comments('w1');
+        $comments = $client->workRecords()->comments(Id::W1);
 
         self::assertCount(2, $comments);
         self::assertContainsOnlyInstancesOf(WorkRecordComment::class, $comments);
@@ -37,25 +38,25 @@ final class WorkRecordsCommentsTest extends TestCase
         $first = Fixtures::json('work-record-comments')[0];
         self::assertIsArray($first);
         $client = MockFactro::client([
-            'GET /work-records/w1/comments/c1' => static function (string $m, string $u) use ($first): MockResponse {
-                self::assertSame(MockFactro::BASE_URL.'/work-records/w1/comments/c1', $u);
+            'GET /work-records/'.Id::W1.'/comments/'.Id::C1 => static function (string $m, string $u) use ($first): MockResponse {
+                self::assertSame(MockFactro::BASE_URL.'/work-records/'.Id::W1.'/comments/'.Id::C1, $u);
 
                 return new JsonMockResponse($first);
             },
-            'GET /work-records/w1/comments/missing' => new MockResponse('not found', ['http_code' => 404]),
+            'GET /work-records/'.Id::W1.'/comments/'.Id::MISSING => new MockResponse('not found', ['http_code' => 404]),
         ]);
 
-        self::assertSame($first['id'], $client->workRecords()->comment('w1', 'c1')->id);
+        self::assertSame($first['id'], $client->workRecords()->comment(Id::W1, Id::C1)->id);
 
         $this->expectException(NotFoundException::class);
-        $client->workRecords()->comment('w1', 'missing');
+        $client->workRecords()->comment(Id::W1, Id::MISSING);
     }
 
     public function testAddCommentPostsPayload(): void
     {
         $first = Fixtures::json('work-record-comments')[0];
         self::assertIsArray($first);
-        $client = MockFactro::client(['POST /work-records/w1/comments' => static function (string $m, string $u, array $o) use ($first): MockResponse {
+        $client = MockFactro::client(['POST /work-records/'.Id::W1.'/comments' => static function (string $m, string $u, array $o) use ($first): MockResponse {
             self::assertSame('POST', $m);
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"text":"<p>Hi</p>","parentCommentId":"c0"}', $o['body']);
@@ -63,7 +64,7 @@ final class WorkRecordsCommentsTest extends TestCase
             return new JsonMockResponse($first);
         }]);
 
-        $added = $client->workRecords()->addComment('w1', new NewWorkRecordComment('<p>Hi</p>', 'c0'));
+        $added = $client->workRecords()->addComment(Id::W1, new NewWorkRecordComment('<p>Hi</p>', 'c0'));
 
         self::assertSame($first['id'], $added->id);
     }

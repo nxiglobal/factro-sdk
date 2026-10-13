@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Tests\Unit\Resource\Project\Output;
 
-use Nxi\Factro\Exception\HydrationException;
 use Nxi\Factro\Resource\Project\Output\ProjectStructureNode;
 use Nxi\Factro\Resource\Project\StructureNodeType;
 use Nxi\Factro\Testing\Fixtures;
@@ -59,9 +58,11 @@ final class ProjectStructureNodeTest extends TestCase
         self::assertSame([], $leaf->packageIds());
     }
 
-    public function testUnknownTypeThrows(): void
+    public function testUnknownTypeHydratesAsNullWithRawValue(): void
     {
-        $this->expectException(HydrationException::class);
-        ProjectStructureNode::fromArray(['id' => 'x', 'type' => 'room', 'children' => []]);
+        $node = ProjectStructureNode::fromArray(['id' => 'x', 'type' => 'room', 'children' => []]);
+
+        self::assertNull($node->type);
+        self::assertSame('room', $node->typeValue);
     }
 }

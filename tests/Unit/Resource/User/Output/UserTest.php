@@ -58,9 +58,9 @@ final class UserTest extends TestCase
         }, Fixtures::json('users'));
 
         self::assertCount(5, $users);
-        $groups = array_map(static fn (User $u): string => $u->securityGroup->value, array_slice($users, 0, 4));
+        $groups = array_map(static fn (User $u): int|string => $u->securityGroupValue, array_slice($users, 0, 4));
         self::assertEqualsCanonicalizing(array_column(SecurityGroup::cases(), 'value'), $groups);
-        self::assertTrue($users[3]->securityGroup->isGuest());
+        self::assertTrue($users[3]->securityGroup?->isGuest());
         self::assertNull($users[3]->accountId);
         self::assertFalse($users[4]->isActive);
     }

@@ -40,7 +40,7 @@ jobs:
 
   tests:
     # Job names are required status checks in the branch protection of main and develop
-    name: tests (PHP ${{ matrix.php }}, ${{ matrix.deps }})
+    name: tests (PHP ${{ matrix.php }}, ${{ matrix.deps }}${{ matrix.symfony && format(', Symfony {0}', matrix.symfony) || '' }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -48,8 +48,11 @@ jobs:
         include:
           - { php: '8.4', deps: highest }
           - { php: '8.5', deps: highest }
-          # Static tools are version dependent, the lowest job only checks the runtime constraints
+          # Static tools are version dependent, the lowest jobs only check the runtime constraints.
+          # Plain lowest resolves to Symfony 7.4.0, the pinned entries cover the newest 7.4 and the lowest 8.x.
           - { php: '8.4', deps: lowest }
+          - { php: '8.4', deps: highest, symfony: '7.4.*' }
+          - { php: '8.4', deps: lowest, symfony: '^8.0' }
     steps:
       - uses: actions/checkout@v4
 
@@ -58,9 +61,18 @@ jobs:
           php-version: ${{ matrix.php }}
           coverage: none
 
+      - name: Pin Symfony ${{ matrix.symfony }}
+        if: matrix.symfony
+        run: |
+          composer require --no-update "symfony/clock:${{ matrix.symfony }}" "symfony/http-client:${{ matrix.symfony }}" "symfony/rate-limiter:${{ matrix.symfony }}"
+          composer require --no-update --dev "symfony/cache:${{ matrix.symfony }}"
+
       - uses: ramsey/composer-install@v3
         with:
           dependency-versions: ${{ matrix.deps }}
+
+      - name: Show Symfony versions
+        run: composer show | grep -E '^symfony/(clock|http-client|rate-limiter) '
 
       - name: PHPUnit
         run: composer test

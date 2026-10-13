@@ -24,4 +24,52 @@ final class Payload
     {
         return array_filter($fields, static fn (mixed $value): bool => null !== $value);
     }
+
+    /**
+     * Validates the $clear list of an input DTO in its constructor, so that a wrong key fails where the DTO is built.
+     * Property names of the DTO must equal the payload keys of the clearable fields.
+     *
+     * @param list<string> $clear
+     * @param list<string> $clearable fields verified against the live API to accept null
+     *
+     * @throws \InvalidArgumentException when a cleared field is not clearable or also set
+     */
+    public static function assertClearable(object $input, array $clear, array $clearable): void
+    {
+        $values = get_object_vars($input);
+        foreach ($clear as $field) {
+            if (!\in_array($field, $clearable, true)) {
+                throw new \InvalidArgumentException(\sprintf('Field "%s" cannot be cleared in %s; clearable fields: %s.', $field, $input::class, implode(', ', $clearable)));
+            }
+
+            if (null !== ($values[$field] ?? null)) {
+                throw new \InvalidArgumentException(\sprintf('Field "%s" cannot be set and cleared at once.', $field));
+            }
+        }
+    }
+
+    /**
+     * Like withoutNulls(), but sends every field named in $clear as an explicit null so that factro empties it.
+     *
+     * @param array<string, mixed> $fields
+     * @param list<string>         $clear
+     *
+     * @return array<string, mixed>
+     *
+     * @throws \InvalidArgumentException when a cleared field is unknown or also set
+     */
+    public static function withoutNullsExcept(array $fields, array $clear): array
+    {
+        foreach ($clear as $field) {
+            if (!\array_key_exists($field, $fields)) {
+                throw new \InvalidArgumentException(\sprintf('Cannot clear unknown field "%s".', $field));
+            }
+
+            if (null !== $fields[$field]) {
+                throw new \InvalidArgumentException(\sprintf('Field "%s" cannot be set and cleared at once.', $field));
+            }
+        }
+
+        return [...self::withoutNulls($fields), ...array_fill_keys($clear, null)];
+    }
 }

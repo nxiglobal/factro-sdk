@@ -20,7 +20,7 @@ final class Notes extends AbstractResource
      */
     public function comments(string $noteId): array
     {
-        return array_map(NoteComment::fromArray(...), $this->rows($this->transport->request('GET', '/note/'.rawurlencode($noteId).'/comments')));
+        return array_map(NoteComment::fromArray(...), $this->rows($this->transport->request('GET', '/note/'.self::id($noteId).'/comments')));
     }
 
     /**
@@ -28,7 +28,7 @@ final class Notes extends AbstractResource
      */
     public function comment(string $noteId, string $commentId): NoteComment
     {
-        return NoteComment::fromArray($this->object($this->transport->request('GET', '/note/'.rawurlencode($noteId).'/comments/'.rawurlencode($commentId))));
+        return NoteComment::fromArray($this->object($this->transport->request('GET', '/note/'.self::id($noteId).'/comments/'.self::id($commentId))));
     }
 
     /**
@@ -36,6 +36,6 @@ final class Notes extends AbstractResource
      */
     public function addComment(string $noteId, NewNoteComment $comment): NoteComment
     {
-        return NoteComment::fromArray($this->object($this->transport->request('POST', '/note/'.rawurlencode($noteId).'/comments', json: $comment->toPayload())));
+        return NoteComment::fromArray($this->object($this->transport->request('POST', '/note/'.self::id($noteId).'/comments', json: $comment->toPayload())));
     }
 }

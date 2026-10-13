@@ -28,7 +28,7 @@ final class Companies extends AbstractResource
      */
     public function get(string $companyId): Company
     {
-        return Company::fromArray($this->object($this->transport->request('GET', '/companies/'.rawurlencode($companyId))));
+        return Company::fromArray($this->object($this->transport->request('GET', '/companies/'.self::id($companyId))));
     }
 
     /**
@@ -60,7 +60,7 @@ final class Companies extends AbstractResource
             throw new \InvalidArgumentException('CompanyChanges must set at least one field.');
         }
 
-        return Company::fromArray($this->object($this->transport->request('PUT', '/companies/'.rawurlencode($companyId), json: $changes->toPayload())));
+        return Company::fromArray($this->object($this->transport->request('PUT', '/companies/'.self::id($companyId), json: $changes->toPayload())));
     }
 
     /**
@@ -68,7 +68,7 @@ final class Companies extends AbstractResource
      */
     public function delete(string $companyId): void
     {
-        $this->transport->request('DELETE', '/companies/'.rawurlencode($companyId));
+        $this->transport->request('DELETE', '/companies/'.self::id($companyId));
     }
 
     /**
@@ -131,7 +131,7 @@ final class Companies extends AbstractResource
      */
     public function deleteCompanyTag(string $tagId): void
     {
-        $this->transport->request('DELETE', '/companies/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/companies/tags/'.self::id($tagId));
     }
 
     /**
@@ -141,7 +141,7 @@ final class Companies extends AbstractResource
      */
     public function tags(string $companyId): array
     {
-        return array_map(CompanyTag::fromArray(...), $this->rows($this->transport->request('GET', '/companies/'.rawurlencode($companyId).'/tags')));
+        return array_map(CompanyTag::fromArray(...), $this->rows($this->transport->request('GET', '/companies/'.self::id($companyId).'/tags')));
     }
 
     /**
@@ -149,7 +149,7 @@ final class Companies extends AbstractResource
      */
     public function addTag(string $companyId, string $tagId): void
     {
-        $this->transport->request('PUT', '/companies/'.rawurlencode($companyId).'/tags', json: ['tagId' => $tagId]);
+        $this->transport->request('PUT', '/companies/'.self::id($companyId).'/tags', json: ['tagId' => $tagId]);
     }
 
     /**
@@ -157,6 +157,6 @@ final class Companies extends AbstractResource
      */
     public function removeTag(string $companyId, string $tagId): void
     {
-        $this->transport->request('DELETE', '/companies/'.rawurlencode($companyId).'/tags/'.rawurlencode($tagId));
+        $this->transport->request('DELETE', '/companies/'.self::id($companyId).'/tags/'.self::id($tagId));
     }
 }

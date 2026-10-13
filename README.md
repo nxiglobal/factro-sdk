@@ -9,12 +9,12 @@
 
 [factro](https://www.factro.de) is a web-based project management software made in Germany. Its Core API is a REST API for projects, packages, tasks, users, work records and the other objects of a factro tenant; the official documentation is at https://cloud.factro.com/api/core/docs/.
 
-This package is a PHP SDK for the factro Core API, built exclusively on Symfony components (`symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`). It encapsulates the API's quirks (raw token header, IETF rate-limit headers, mixed date formats, partial-object PUT semantics) behind typed Api classes, readonly DTOs and a small exception family.
+This package is a PHP SDK for the factro Core API, built exclusively on Symfony components (`symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`, `symfony/mime`). It encapsulates the API's quirks (raw token header, IETF rate-limit headers, mixed date formats, partial-object PUT semantics) behind typed Api classes, readonly DTOs and a small exception family.
 
 ## Requirements
 
 - PHP 8.4 or newer
-- Symfony 8 components: `symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`
+- Symfony 7.4 LTS or 8 components: `symfony/http-client`, `symfony/rate-limiter`, `symfony/clock`
 - `psr/log` 3
 - a token for the factro Core API
 
@@ -57,6 +57,14 @@ $client->tasks()->update($created->id, new TaskChanges(description: '<p>Done</p>
 $client->tasks()->setState($created->id, TaskState::CLOSED);
 ```
 
+Update DTOs send only the fields that are set: factro treats PUT as a partial update, so `null` means "leave unchanged". To empty a field, name its payload key in `clear`; it is sent as explicit `null`:
+
+```php
+$client->tasks()->update($taskId, new TaskChanges(clear: ['executorId']));
+```
+
+`clear` exists in `TaskChanges`, `ProjectChanges`, `PackageChanges`, `ChecklistEntryChanges` and `NewTask` (there it suppresses factro's default, e.g. a task without executor). factro does not accept `null` for every field (`officerId: null` on a task is refused with 403), so each of these classes lists the keys verified against the API in its `CLEARABLE` constant. The constructor throws `\InvalidArgumentException` for a key outside `CLEARABLE` or a key that is also set in the same call.
+
 `FactroClientFactory::create()` wraps the base client in a decorator chain: request policy, retry (GET only), rate limiter, scoping (base URI, headers, timeouts). Every request passes through `Transport`, which decodes JSON, maps failures onto the exception family in `Nxi\Factro\Exception` and logs one line per call (never headers, never bodies). Resource classes are reached through `$client->projects()`, `packages()`, `tasks()`, `users()`, `companies()`, `contacts()`, `workRecords()`, `appointments()`, `teams()`, `documents()`, `comments()`, `notes()`, `todoLists()`, `webhooks()`, `customViews()` and `templates()`; together they cover every operation of the Core API except `GET /tasks` (tenant-wide, unpaginated) and the deprecated `/efforts*` routes.
 
 ## Package layout
@@ -70,7 +78,7 @@ Nxi\Factro\Resource\Task\Input\NewTask, TaskChanges, NewTaskComment, TaskConnect
 Nxi\Factro\Resource\Task\Output\Task, TaskComment, TaskConnection
 ```
 
-`Project`, `Package`, `WorkRecord`, `User`, `Company`, `Contact`, `Appointment`, `Team`, `Document`, `Comment`, `Note`, `TodoList`, `Webhook`, `CustomView` and `Template` follow the same pattern. Enum cases are UPPERCASE (`TaskState::IN_PROCESS`, `TaskPriority::PRIORITY_50`). `Nxi\Factro\Http`, `Nxi\Factro\Mapping` and `Resource\AbstractResource` are `@internal`.
+`Project`, `Package`, `WorkRecord`, `User`, `Company`, `Contact`, `Appointment`, `Team`, `Document`, `Comment`, `Note`, `TodoList`, `Webhook`, `CustomView` and `Template` follow the same pattern. Enum cases are UPPERCASE (`TaskState::IN_PROCESS`, `TaskPriority::PRIORITY_50`). Enum properties of output DTOs are nullable and have a raw sibling (`$task->taskState` and `$task->taskStateValue`): a value this SDK version does not know yet hydrates as `null` with the raw value kept, instead of failing the whole response. `Nxi\Factro\Http`, `Nxi\Factro\Mapping`, `Resource\AbstractResource` and the `toPayload()` methods of the input DTOs are `@internal`.
 
 Operations that recur across resources share one naming scheme:
 
@@ -80,7 +88,7 @@ Operations that recur across resources share one naming scheme:
 | Batch routes (`POST /x/x`, `PUT /x/x`) | `createMany(list<NewX>)`, `updateMany(array<id, XChanges>)` |
 | Comments | `comments()`, `comment()`, `addComment()`, `deleteComment()` |
 | Tags | `taskTags()`/`projectTags()`/`companyTags()`/`employeeTags()`, `createXTag()`, `deleteXTag()`, `tags($id)`, `addTag()`, `removeTag()` |
-| Associations | `setCompany()`, `removeCompany()`, `setContact()`, `removeContact()`, `moveToProject()`, `removeFromProject()`, `moveToPackage()`, `removeFromPackage()` |
+| Associations | `setCompany()`, `removeCompany()`, `setContact()`, `removeContact()`, `moveToProject()`, `removeFromProject()`, `moveToPackage()`, `removeFromPackage()` (packages: `removeFromParentPackage()`) |
 | Documents | `documents()`, `addDocument(DocumentUpload)`, `removeDocument()` |
 | Access rights | `accessRights($id)` returns `AccessRights` with `readRights()`, `writeRights()`, `grantRead()`, `revokeRead()`, `grantWrite()`, `revokeWrite()`, `grantTeamRead()`, `revokeTeamRead()`, `grantTeamWrite()`, `revokeTeamWrite()` |
 
@@ -96,7 +104,7 @@ $tags = $client->users()->tagsForMany(array_column($users, 'id'), concurrency: 5
 $all = $client->users()->employeeTags();                                            // GET /users/tags
 ```
 
-Comments (`comments()`, `addComment()`), connections (`connections()`, `addConnection()`) and the project structure (`projects()->structure()`, a tree with `find()`, `depthOf()` and `packageIds()`) complete the read model. `users()` also manages users (`create()`, `update()`, `delete()`), substitutes (`substitutes()`, `substitutedUsers()`, `addSubstitute()`, `removeSubstitute()`), absences (`absences()`, `absencesOf()`, `createAbsence()`, `updateAbsence()`, `deleteAbsence()` and the batch variants) and the seat quota (`quota()`).
+Comments (`comments()`, `addComment()`), connections (`connections()`, `addConnection()`) and the project structure (`projects()->structure()`, a tree with `find()`, `depthOf()` and `packageIds()`) complete the read model. `users()` also manages users (`create()`, `update()`, `delete()`), substitutes (`substitutes()`, `substitutedUsers()`, `addSubstitute()`, `removeSubstitute()`), absences (`absences()`, `absencesOf()`, `createAbsence()`, `updateAbsence()`, `deleteAbsence()`, and the batch routes as `createAbsences()`/`updateAbsences()`, because `createMany()`/`updateMany()` of `users()` already batch users) and the seat quota (`quota()`).
 
 ## Checklists, tags, associations and access rights
 
@@ -112,7 +120,10 @@ $client->packages()->shiftWithSuccessors($projectId, $packageId, daysDelta: 5);
 
 $rights = $client->projects()->accessRights($projectId);
 $rights->grantTeamWrite($teamId);
-$reasons = $rights->readRights();                                // employee id => list of reasons
+$reasons = $rights->readRights();                                // employee id => list<AccessRightReason>
+foreach ($reasons[$employeeId] ?? [] as $r) {
+    echo $r->reason, ' ', $r->packageId ?? $r->projectId ?? $r->taskId; // e.g. HasDirectPackageTeamWriteRight + packageId, teamId
+}
 ```
 
 ## Documents
@@ -159,7 +170,7 @@ $client->workRecords()->create(new NewWorkRecord(
 
 ## Options
 
-`FactroOptions` is readonly and built with named arguments:
+`FactroOptions` is readonly and built with named arguments. Invalid values (non-https `baseUrl`, timeouts <= 0, negative retry values, line breaks in `userAgent`) throw `\InvalidArgumentException` on construction:
 
 | Option | Default | Purpose |
 |:--|:--|:--|
@@ -168,16 +179,18 @@ $client->workRecords()->create(new NewWorkRecord(
 | `inactivityTimeoutSeconds` | 10.0 | `timeout` (Symfony semantics: inactivity) |
 | `timezone` | `Europe/Berlin` | calendar days for `CalendarDate` fields in write DTOs |
 | `policy` | `RequestPolicy::all()` | allowed methods and denied path patterns |
-| `limiterFactory` | sliding window 480/min, `InMemoryStorage` | pass a factory with `CacheStorage` when several processes share one token |
+| `limiterFactory` | sliding window 480/min, `InMemoryStorage` shared by all clients of the process | one window per token within a PHP process; pass a factory with `CacheStorage` when several processes share one token |
 | `maxRetries` | 3 | GET only |
 | `maxRetryAfterSeconds` | 5 | longer `Retry-After` values surface as `RateLimitException` instead of blocking |
 | `logger` | `NullLogger` | one line per call |
 | `clock` | `NativeClock` | `creationDate` when creating tasks, `MockClock` in tests |
-| `onRateLimit` | `null` | closure receiving `RateLimitInfo` after every response, for metrics |
+| `onRateLimit` | `null` | closure receiving `RateLimitInfo` after every response, for metrics; `limit`, `windowSeconds` and `resetSeconds` are `null` when factro did not send them |
 | `userAgent` | `nxi-factro-sdk/<version>` | identification towards factro |
 | `sendCreationDate` | `true` | whether `NewTask` sends `creationDate`; the API's default is undocumented |
 
 The token is a `#[\SensitiveParameter]` everywhere, is never logged and never appears in an exception message.
+
+`print_r()` and `var_dump()` of `FactroClient` show the base URL and the policy, not the token. Symfony's VarDumper ignores `__debugInfo()` and still shows it. Stack traces of Symfony HttpClient carry the request options, token included, as call arguments: run production with `zend.exception_ignore_args=On` (the `php.ini-production` default) and configure error trackers to drop frame arguments.
 
 ## Errors
 
@@ -185,17 +198,21 @@ All exceptions implement `Nxi\Factro\Exception\FactroException`.
 
 | Exception | When |
 |:--|:--|
-| `AuthenticationException` | HTTP 401 (invalid token) and 403 (for example "Task is closed") |
+| `AuthenticationException` | HTTP 401 (invalid token) |
+| `ForbiddenException` | HTTP 403, the token may not perform this operation (for example "Task is closed") |
 | `NotFoundException` | HTTP 404; `find*()` methods turn it into `null` |
 | `ValidationException` | HTTP 400 and 422, `errors()` returns the body's error list |
 | `RateLimitException` | HTTP 429, `retryAfterSeconds()` from `Retry-After` or the `ratelimit` header |
 | `ServerException` | HTTP 500 to 599 |
+| `UnexpectedResponseException` | success status, but the body is not a JSON object or array (HTML page, truncated JSON, scalar) |
 | `FactroRequestException` | every other status of 400 or higher; base class of the above |
 | `TransportException` | DNS, TCP, TLS or timeout failure; `possiblyExecuted()` is true for POST, PUT, DELETE |
 | `OperationNotPermittedException` | the `RequestPolicy` forbids the call; thrown before anything is sent |
-| `HydrationException` | a response field is missing or has an unexpected type |
+| `HydrationException` | a response field is missing or has an unexpected type, or a timestamp names an impossible date or time |
 
 `FactroRequestException` carries `method`, `path`, `statusCode`, `rawBody`, `headers` and offers `factroMessage()` (from a JSON `message`/`error`/`detail`/`title` or the plain-text body).
+
+Ids that end up in a request path must be UUIDs (shape only, any case). Anything else, including `''`, `.` and `..`, throws `\InvalidArgumentException` before a request is built, so an id can never change the route or slip past a `RequestPolicy` deny pattern.
 
 ## Dates
 
@@ -265,7 +282,7 @@ In multi-tenant applications where the token changes per user, do not register `
 
 ## Versioning
 
-The SDK follows [Semantic Versioning](https://semver.org): breaking changes only come with a new major version. Classes, methods and namespaces marked `@internal` (`Nxi\Factro\Http`, `Nxi\Factro\Mapping`, `Resource\AbstractResource`) are not covered and may change in any release. `CHANGELOG.md` lists the changes of every release.
+The SDK follows [Semantic Versioning](https://semver.org): breaking changes only come with a new major version. Classes, methods and namespaces marked `@internal` (`Nxi\Factro\Http`, `Nxi\Factro\Mapping`, `Resource\AbstractResource`, `toPayload()`/`toMultipart()` of the DTOs) are not covered and may change in any release. `CHANGELOG.md` lists the changes of every release.
 
 ## Contributing
 

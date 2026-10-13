@@ -8,7 +8,7 @@ use Nxi\Factro\Mapping\Field;
 
 /**
  * A task comment (IGetTaskCommentPayload plus the undocumented subComments list).
- * creationDate is ISO, changeDate a JavaScript timestamp.
+ * creationDate is ISO, changeDate a JavaScript timestamp. factro sends text null for some comments.
  */
 final readonly class TaskComment
 {
@@ -18,7 +18,7 @@ final readonly class TaskComment
     public function __construct(
         public string $id,
         public string $taskId,
-        public string $text,
+        public ?string $text,
         public string $creatorId,
         public ?string $parentId,
         public \DateTimeImmutable $creationDate,
@@ -38,7 +38,7 @@ final readonly class TaskComment
         return new self(
             id: Field::string($data, 'id', $o),
             taskId: Field::string($data, 'taskId', $o),
-            text: Field::string($data, 'text', $o),
+            text: Field::nullableString($data, 'text', $o),
             creatorId: Field::string($data, 'creatorId', $o),
             parentId: Field::nullableString($data, 'parentId', $o),
             creationDate: Field::isoUtc($data, 'creationDate', $o),

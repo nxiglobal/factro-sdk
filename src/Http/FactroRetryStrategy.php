@@ -48,8 +48,16 @@ final readonly class FactroRetryStrategy implements RetryStrategyInterface
         return null === $after || $after <= $this->maxRetryAfterSeconds;
     }
 
+    /**
+     * RetryableHttpClient uses Retry-After itself; without it a 429 waits for "t" from the ratelimit header
+     * instead of backing off exponentially into the same window.
+     */
     public function getDelay(AsyncContext $context, ?string $responseContent, ?TransportExceptionInterface $exception): int
     {
+        if (429 === $context->getStatusCode() && null !== $after = RateLimitHeaders::retryAfterSeconds($context->getHeaders())) {
+            return min($after, $this->maxRetryAfterSeconds) * 1000;
+        }
+
         return $this->inner->getDelay($context, $responseContent, $exception);
     }
 }

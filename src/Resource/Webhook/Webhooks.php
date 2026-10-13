@@ -33,6 +33,10 @@ final class Webhooks extends AbstractResource
      */
     public function payloadsByAction(string $action, \DateTimeImmutable $since): array
     {
+        if (in_array($action, ['', '.', '..'], true)) {
+            throw new \InvalidArgumentException(sprintf('Invalid webhook action type "%s".', $action));
+        }
+
         return array_map(WebhookPayload::fromArray(...), $this->rows($this->transport->request('GET', '/webhook/payload/type/'.rawurlencode($action).'/'.$this->startDate($since))));
     }
 

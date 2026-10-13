@@ -8,6 +8,7 @@ use Nxi\Factro\Resource\Document\Documents;
 use Nxi\Factro\Resource\Document\Output\DataQuota;
 use Nxi\Factro\Resource\Document\Output\Document;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -35,13 +36,13 @@ final class DocumentsTest extends TestCase
     public function testGetAndFind(): void
     {
         $client = MockFactro::client([
-            'GET /documents/d1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('document')),
-            'GET /documents/missing' => new MockResponse(Fixtures::raw('errors/404-task.txt'), ['http_code' => 404]),
+            'GET /documents/'.Id::D1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('document')),
+            'GET /documents/'.Id::MISSING => new MockResponse(Fixtures::raw('errors/404-task.txt'), ['http_code' => 404]),
         ]);
 
-        self::assertInstanceOf(Document::class, $client->documents()->get('d1'));
-        self::assertInstanceOf(Document::class, $client->documents()->find('d1'));
-        self::assertNull($client->documents()->find('missing'));
+        self::assertInstanceOf(Document::class, $client->documents()->get(Id::D1));
+        self::assertInstanceOf(Document::class, $client->documents()->find(Id::D1));
+        self::assertNull($client->documents()->find(Id::MISSING));
     }
 
     public function testQuota(): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Http;
 
-use Nxi\Factro\Policy\OperationNotPermittedException;
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
 use Symfony\Component\HttpClient\DecoratorTrait;
 use Symfony\Contracts\HttpClient\HttpClientInterface;

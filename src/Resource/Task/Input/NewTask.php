@@ -15,12 +15,21 @@ use Psr\Clock\ClockInterface;
  * Body of POST /tasks.
  *
  * targetParentId is the package the task is created in. Whether factro also accepts a project id
- * here (task on project level) is undocumented.
+ * here (task on project level) is undocumented. Fields named in $clear are sent as explicit null instead of
+ * leaving them to factro's default, e.g. ['executorId'] creates a task without executor (live test 2026-10-02).
  */
 final readonly class NewTask
 {
     /**
+     * Payload keys that factro accepts as null, verified against the live API.
+     *
+     * @var list<string>
+     */
+    public const array CLEARABLE = ['executorId'];
+
+    /**
      * @param array<string, mixed>|null $customFields
+     * @param list<string>              $clear        payload keys from CLEARABLE to send as null
      */
     public function __construct(
         public string $title,
@@ -37,10 +46,14 @@ final readonly class NewTask
         public ?string $colorScheme = null,
         public ?array $customFields = null,
         public ?Urgency $urgency = null,
+        public array $clear = [],
     ) {
+        Payload::assertClearable($this, $clear, self::CLEARABLE);
     }
 
     /**
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array<string, mixed>
      */
     public function toPayload(\DateTimeZone $timezone, ClockInterface $clock, bool $sendCreationDate): array
@@ -55,7 +68,7 @@ final readonly class NewTask
             $payload['creationDate'] = FactroDateTime::toIsoUtc($clock->now());
         }
 
-        return $payload + Payload::withoutNulls([
+        return $payload + Payload::withoutNullsExcept([
             'description' => $this->description,
             'startDate' => $this->startDate?->toFactro($timezone),
             'endDate' => $this->endDate?->toFactro($timezone),
@@ -67,6 +80,6 @@ final readonly class NewTask
             'colorScheme' => $this->colorScheme,
             'customFields' => $this->customFields,
             'urgency' => $this->urgency?->value,
-        ]);
+        ], $this->clear);
     }
 }

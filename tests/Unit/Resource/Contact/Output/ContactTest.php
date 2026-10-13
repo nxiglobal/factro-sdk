@@ -77,13 +77,14 @@ final class ContactTest extends TestCase
         self::assertSame(['male', 'female', 'none'], array_column(Salutation::cases(), 'value'));
     }
 
-    public function testUnknownSalutationThrows(): void
+    public function testUnknownSalutationHydratesAsNullWithRawValue(): void
     {
         $row = $this->row(0);
         $row['salutation'] = 'diverse';
+        $contact = Contact::fromArray($row);
 
-        $this->expectException(HydrationException::class);
-        Contact::fromArray($row);
+        self::assertNull($contact->salutation);
+        self::assertSame('diverse', $contact->salutationValue);
     }
 
     /** @return iterable<string, array{string}> */

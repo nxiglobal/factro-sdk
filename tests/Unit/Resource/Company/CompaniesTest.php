@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Tests\Unit\Resource\Company;
 
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\FactroOptions;
-use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
 use Nxi\Factro\Resource\Company\Companies;
 use Nxi\Factro\Resource\Company\Input\CompanyChanges;
@@ -13,6 +13,7 @@ use Nxi\Factro\Resource\Company\Input\NewCompany;
 use Nxi\Factro\Resource\Company\Output\Company;
 use Nxi\Factro\Resource\Company\Output\CompanyTag;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -26,16 +27,16 @@ final class CompaniesTest extends TestCase
     {
         $client = MockFactro::client([
             'GET /companies' => JsonMockResponse::fromFile(Fixtures::path('companies')),
-            'GET /companies/c1' => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('company')),
-            'GET /companies/missing' => new MockResponse('Company with id "missing" not found', ['http_code' => 404]),
+            'GET /companies/'.Id::C1 => static fn (): MockResponse => JsonMockResponse::fromFile(Fixtures::path('company')),
+            'GET /companies/'.Id::MISSING => new MockResponse('Company with id "missing" not found', ['http_code' => 404]),
         ]);
 
         $companies = $client->companies()->list();
         self::assertCount(3, $companies);
         self::assertContainsOnlyInstancesOf(Company::class, $companies);
-        self::assertInstanceOf(Company::class, $client->companies()->get('c1'));
-        self::assertInstanceOf(Company::class, $client->companies()->find('c1'));
-        self::assertNull($client->companies()->find('missing'));
+        self::assertInstanceOf(Company::class, $client->companies()->get(Id::C1));
+        self::assertInstanceOf(Company::class, $client->companies()->find(Id::C1));
+        self::assertNull($client->companies()->find(Id::MISSING));
     }
 
     public function testCreatePostsPayloadAndReturnsCompany(): void
@@ -52,27 +53,27 @@ final class CompaniesTest extends TestCase
 
     public function testUpdateSendsOnlyChangedFields(): void
     {
-        $client = MockFactro::client(['PUT /companies/c1' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /companies/'.Id::C1 => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"website":"https://example.invalid"}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('company'));
         }]);
 
-        self::assertInstanceOf(Company::class, $client->companies()->update('c1', new CompanyChanges(website: 'https://example.invalid')));
+        self::assertInstanceOf(Company::class, $client->companies()->update(Id::C1, new CompanyChanges(website: 'https://example.invalid')));
     }
 
     public function testUpdateWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->companies()->update('c1', new CompanyChanges());
+        MockFactro::client([])->companies()->update(Id::C1, new CompanyChanges());
     }
 
     public function testDeleteDiscardsResponse(): void
     {
-        $client = MockFactro::client(['DELETE /companies/c1' => JsonMockResponse::fromFile(Fixtures::path('company'))]);
+        $client = MockFactro::client(['DELETE /companies/'.Id::C1 => JsonMockResponse::fromFile(Fixtures::path('company'))]);
 
-        $client->companies()->delete('c1');
+        $client->companies()->delete(Id::C1);
         $this->addToAssertionCount(1);
     }
 
@@ -81,7 +82,7 @@ final class CompaniesTest extends TestCase
         $client = MockFactro::client([], new FactroOptions(baseUrl: MockFactro::BASE_URL, policy: RequestPolicy::withoutDeletes(), maxRetries: 0));
 
         $this->expectException(OperationNotPermittedException::class);
-        $client->companies()->delete('c1');
+        $client->companies()->delete(Id::C1);
     }
 
     public function testCreateManyPostsListOfPayloads(): void
@@ -109,12 +110,12 @@ final class CompaniesTest extends TestCase
     {
         $client = MockFactro::client(['PUT /companies/companies' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
-            self::assertJsonStringEqualsJsonString('[{"id":"c1","name":"A"},{"id":"c2","phone":"1"}]', $o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"'.Id::C1.'","name":"A"},{"id":"c2","phone":"1"}]', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('companies'));
         }]);
 
-        $companies = $client->companies()->updateMany(['c1' => new CompanyChanges(name: 'A'), 'c2' => new CompanyChanges(phone: '1')]);
+        $companies = $client->companies()->updateMany([Id::C1 => new CompanyChanges(name: 'A'), 'c2' => new CompanyChanges(phone: '1')]);
 
         self::assertCount(3, $companies);
         self::assertContainsOnlyInstancesOf(Company::class, $companies);
@@ -152,17 +153,17 @@ final class CompaniesTest extends TestCase
 
     public function testDeleteCompanyTagDiscardsResponse(): void
     {
-        $client = MockFactro::client(['DELETE /companies/tags/tag1' => new JsonMockResponse(self::tagRow())]);
+        $client = MockFactro::client(['DELETE /companies/tags/'.Id::TAG1 => new JsonMockResponse(self::tagRow())]);
 
-        $client->companies()->deleteCompanyTag('tag1');
+        $client->companies()->deleteCompanyTag(Id::TAG1);
         $this->addToAssertionCount(1);
     }
 
     public function testTagsOfCompany(): void
     {
-        $client = MockFactro::client(['GET /companies/c1/tags' => JsonMockResponse::fromFile(Fixtures::path('company-tags'))]);
+        $client = MockFactro::client(['GET /companies/'.Id::C1.'/tags' => JsonMockResponse::fromFile(Fixtures::path('company-tags'))]);
 
-        $tags = $client->companies()->tags('c1');
+        $tags = $client->companies()->tags(Id::C1);
 
         self::assertCount(3, $tags);
         self::assertContainsOnlyInstancesOf(CompanyTag::class, $tags);
@@ -170,22 +171,22 @@ final class CompaniesTest extends TestCase
 
     public function testAddTagPutsTagIdAndAccepts204(): void
     {
-        $client = MockFactro::client(['PUT /companies/c1/tags' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['PUT /companies/'.Id::C1.'/tags' => static function (string $m, string $u, array $o): MockResponse {
             self::assertIsString($o['body']);
-            self::assertJsonStringEqualsJsonString('{"tagId":"tag1"}', $o['body']);
+            self::assertJsonStringEqualsJsonString('{"tagId":"'.Id::TAG1.'"}', $o['body']);
 
             return new MockResponse('', ['http_code' => 204]);
         }]);
 
-        $client->companies()->addTag('c1', 'tag1');
+        $client->companies()->addTag(Id::C1, Id::TAG1);
         $this->addToAssertionCount(1);
     }
 
     public function testRemoveTagAccepts204(): void
     {
-        $client = MockFactro::client(['DELETE /companies/c1/tags/tag1' => new MockResponse('', ['http_code' => 204])]);
+        $client = MockFactro::client(['DELETE /companies/'.Id::C1.'/tags/'.Id::TAG1 => new MockResponse('', ['http_code' => 204])]);
 
-        $client->companies()->removeTag('c1', 'tag1');
+        $client->companies()->removeTag(Id::C1, Id::TAG1);
         $this->addToAssertionCount(1);
     }
 

@@ -16,6 +16,7 @@ use Nxi\Factro\Resource\User\Output\UserQuota;
 use Nxi\Factro\Resource\User\SecurityGroup;
 use Nxi\Factro\Resource\User\Users;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -31,9 +32,10 @@ final class UsersWriteTest extends TestCase
     public function testCreatePostsPayloadAndReturnsUser(): void
     {
         $client = MockFactro::client(['POST /users' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
                 '{"emailAddress":"new@example.invalid","firstName":"New","lastName":"User","securityGroup":"BasicRights","city":"Hamburg"}',
-                (string) $o['body'],
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('user'));
@@ -46,36 +48,38 @@ final class UsersWriteTest extends TestCase
 
     public function testUpdateSendsOnlyChangedFields(): void
     {
-        $client = MockFactro::client(['PUT /users/u1' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('{"lastName":"New"}', (string) $o['body']);
+        $client = MockFactro::client(['PUT /users/'.Id::U1 => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('{"lastName":"New"}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('user'));
         }]);
 
-        self::assertInstanceOf(User::class, $client->users()->update('u1', new UserChanges(lastName: 'New')));
+        self::assertInstanceOf(User::class, $client->users()->update(Id::U1, new UserChanges(lastName: 'New')));
     }
 
     public function testUpdateWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->users()->update('u1', new UserChanges());
+        MockFactro::client([])->users()->update(Id::U1, new UserChanges());
     }
 
     public function testDeleteDiscardsResponse(): void
     {
-        $client = MockFactro::client(['DELETE /users/u1' => JsonMockResponse::fromFile(Fixtures::path('user'))]);
+        $client = MockFactro::client(['DELETE /users/'.Id::U1 => JsonMockResponse::fromFile(Fixtures::path('user'))]);
 
-        $client->users()->delete('u1');
+        $client->users()->delete(Id::U1);
         $this->addToAssertionCount(1);
     }
 
     public function testCreateManyPostsListToUsersUsers(): void
     {
         $client = MockFactro::client(['POST /users/users' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
                 '[{"emailAddress":"a@example.invalid","firstName":"A","lastName":"A","securityGroup":"BasicRights"},'
                 .'{"emailAddress":"b@example.invalid","firstName":"B","lastName":"B","securityGroup":"GuestRights"}]',
-                (string) $o['body'],
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('users'));
@@ -99,14 +103,15 @@ final class UsersWriteTest extends TestCase
     public function testUpdateManyPutsListWithIds(): void
     {
         $client = MockFactro::client(['PUT /users/users' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('[{"id":"u1","city":"Hamburg"},{"id":"u2","securityGroup":"AllRights"}]', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"'.Id::U1.'","city":"Hamburg"},{"id":"'.Id::U2.'","securityGroup":"AllRights"}]', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('users'));
         }]);
 
         $users = $client->users()->updateMany([
-            'u1' => new UserChanges(city: 'Hamburg'),
-            'u2' => new UserChanges(securityGroup: SecurityGroup::ALL_RIGHTS),
+            Id::U1 => new UserChanges(city: 'Hamburg'),
+            Id::U2 => new UserChanges(securityGroup: SecurityGroup::ALL_RIGHTS),
         ]);
 
         self::assertContainsOnlyInstancesOf(User::class, $users);
@@ -121,13 +126,14 @@ final class UsersWriteTest extends TestCase
     public function testUpdateManyWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->users()->updateMany(['u1' => new UserChanges()]);
+        MockFactro::client([])->users()->updateMany([Id::U1 => new UserChanges()]);
     }
 
     public function testCreateEmployeeTagPostsName(): void
     {
         $client = MockFactro::client(['POST /users/tags' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('{"name":"Tag 1"}', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('{"name":"Tag 1"}', $o['body']);
 
             return new JsonMockResponse(Fixtures::json('employee-tags')[0]);
         }]);
@@ -140,40 +146,41 @@ final class UsersWriteTest extends TestCase
 
     public function testDeleteEmployeeTagAccepts200WithBody(): void
     {
-        $client = MockFactro::client(['DELETE /users/tags/t1' => new JsonMockResponse(Fixtures::json('employee-tags')[0])]);
+        $client = MockFactro::client(['DELETE /users/tags/'.Id::T1 => new JsonMockResponse(Fixtures::json('employee-tags')[0])]);
 
-        $client->users()->deleteEmployeeTag('t1');
+        $client->users()->deleteEmployeeTag(Id::T1);
         $this->addToAssertionCount(1);
     }
 
     public function testAddAndRemoveTag(): void
     {
         $client = MockFactro::client([
-            'PUT /users/u1/tags' => static function (string $m, string $u, array $o): MockResponse {
-                self::assertJsonStringEqualsJsonString('{"tagId":"t1"}', (string) $o['body']);
+            'PUT /users/'.Id::U1.'/tags' => static function (string $m, string $u, array $o): MockResponse {
+                self::assertIsString($o['body']);
+                self::assertJsonStringEqualsJsonString('{"tagId":"'.Id::T1.'"}', $o['body']);
 
                 return new MockResponse('', ['http_code' => 204]);
             },
-            'DELETE /users/u1/tags/t1' => new MockResponse('', ['http_code' => 204]),
+            'DELETE /users/'.Id::U1.'/tags/'.Id::T1 => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        $client->users()->addTag('u1', 't1');
-        $client->users()->removeTag('u1', 't1');
+        $client->users()->addTag(Id::U1, Id::T1);
+        $client->users()->removeTag(Id::U1, Id::T1);
         $this->addToAssertionCount(1);
     }
 
     public function testSubstitutesAndSubstitutedUsers(): void
     {
         $client = MockFactro::client([
-            'GET /users/u1/substitutes' => JsonMockResponse::fromFile(Fixtures::path('users')),
-            'GET /users/u1/substituted' => new JsonMockResponse([Fixtures::json('user')]),
+            'GET /users/'.Id::U1.'/substitutes' => JsonMockResponse::fromFile(Fixtures::path('users')),
+            'GET /users/'.Id::U1.'/substituted' => new JsonMockResponse([Fixtures::json('user')]),
         ]);
 
-        $substitutes = $client->users()->substitutes('u1');
+        $substitutes = $client->users()->substitutes(Id::U1);
         self::assertCount(5, $substitutes);
         self::assertContainsOnlyInstancesOf(User::class, $substitutes);
 
-        $substituted = $client->users()->substitutedUsers('u1');
+        $substituted = $client->users()->substitutedUsers(Id::U1);
         self::assertCount(1, $substituted);
         self::assertContainsOnlyInstancesOf(User::class, $substituted);
     }
@@ -181,16 +188,17 @@ final class UsersWriteTest extends TestCase
     public function testAddAndRemoveSubstitute(): void
     {
         $client = MockFactro::client([
-            'PUT /users/u1/substitutes' => static function (string $m, string $u, array $o): MockResponse {
-                self::assertJsonStringEqualsJsonString('{"substituteId":"u2"}', (string) $o['body']);
+            'PUT /users/'.Id::U1.'/substitutes' => static function (string $m, string $u, array $o): MockResponse {
+                self::assertIsString($o['body']);
+                self::assertJsonStringEqualsJsonString('{"substituteId":"'.Id::U2.'"}', $o['body']);
 
                 return new MockResponse('', ['http_code' => 204]);
             },
-            'DELETE /users/u1/substitutes/u2' => new MockResponse('', ['http_code' => 204]),
+            'DELETE /users/'.Id::U1.'/substitutes/'.Id::U2 => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        $client->users()->addSubstitute('u1', 'u2');
-        $client->users()->removeSubstitute('u1', 'u2');
+        $client->users()->addSubstitute(Id::U1, Id::U2);
+        $client->users()->removeSubstitute(Id::U1, Id::U2);
         $this->addToAssertionCount(1);
     }
 
@@ -208,30 +216,31 @@ final class UsersWriteTest extends TestCase
     {
         $client = MockFactro::client([
             'GET /users/absences' => JsonMockResponse::fromFile(Fixtures::path('absences')),
-            'GET /users/u1/absences' => new JsonMockResponse([Fixtures::json('absence')]),
+            'GET /users/'.Id::U1.'/absences' => new JsonMockResponse([Fixtures::json('absence')]),
         ]);
 
         $all = $client->users()->absences();
         self::assertCount(3, $all);
         self::assertContainsOnlyInstancesOf(Absence::class, $all);
 
-        $ofUser = $client->users()->absencesOf('u1');
+        $ofUser = $client->users()->absencesOf(Id::U1);
         self::assertCount(1, $ofUser);
         self::assertContainsOnlyInstancesOf(Absence::class, $ofUser);
     }
 
     public function testCreateAbsencePostsToUserPathWithoutEmployeeId(): void
     {
-        $client = MockFactro::client(['POST /users/u1/absences' => static function (string $m, string $u, array $o): MockResponse {
+        $client = MockFactro::client(['POST /users/'.Id::U1.'/absences' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
                 '{"startDate":"2026-10-04T22:00:00.000Z","endDate":"2026-10-09T22:00:00.000Z","type":"Planned"}',
-                (string) $o['body'],
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('absence'));
         }]);
 
-        $absence = $client->users()->createAbsence('u1', new NewAbsence(
+        $absence = $client->users()->createAbsence(Id::U1, new NewAbsence(
             new \DateTimeImmutable('2026-10-05T00:00:00+02:00'),
             new \DateTimeImmutable('2026-10-10T00:00:00+02:00'),
             AbsenceType::PLANNED,
@@ -244,18 +253,19 @@ final class UsersWriteTest extends TestCase
     public function testCreateAbsencesPostsListWithEmployeeIds(): void
     {
         $client = MockFactro::client(['POST /users/absences' => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString(
-                '[{"startDate":"2026-10-04T22:00:00.000Z","endDate":"2026-10-09T22:00:00.000Z","type":"Planned","employeeId":"u1"},'
-                .'{"startDate":"2026-09-13T22:00:00.000Z","endDate":"2026-09-14T22:00:00.000Z","type":"Unplanned","employeeId":"u2"}]',
-                (string) $o['body'],
+                '[{"startDate":"2026-10-04T22:00:00.000Z","endDate":"2026-10-09T22:00:00.000Z","type":"Planned","employeeId":"'.Id::U1.'"},'
+                .'{"startDate":"2026-09-13T22:00:00.000Z","endDate":"2026-09-14T22:00:00.000Z","type":"Unplanned","employeeId":"'.Id::U2.'"}]',
+                $o['body'],
             );
 
             return JsonMockResponse::fromFile(Fixtures::path('absences'));
         }]);
 
         $absences = $client->users()->createAbsences([
-            new NewAbsence(new \DateTimeImmutable('2026-10-04T22:00:00Z'), new \DateTimeImmutable('2026-10-09T22:00:00Z'), AbsenceType::PLANNED, 'u1'),
-            new NewAbsence(new \DateTimeImmutable('2026-09-13T22:00:00Z'), new \DateTimeImmutable('2026-09-14T22:00:00Z'), AbsenceType::UNPLANNED, 'u2'),
+            new NewAbsence(new \DateTimeImmutable('2026-10-04T22:00:00Z'), new \DateTimeImmutable('2026-10-09T22:00:00Z'), AbsenceType::PLANNED, Id::U1),
+            new NewAbsence(new \DateTimeImmutable('2026-09-13T22:00:00Z'), new \DateTimeImmutable('2026-09-14T22:00:00Z'), AbsenceType::UNPLANNED, Id::U2),
         ]);
 
         self::assertCount(3, $absences);
@@ -278,13 +288,14 @@ final class UsersWriteTest extends TestCase
 
     public function testUpdateAbsencePutsChanges(): void
     {
-        $client = MockFactro::client(['PUT /users/absences/a1' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('{"endDate":"2026-10-11T22:00:00.000Z","type":"Unplanned"}', (string) $o['body']);
+        $client = MockFactro::client(['PUT /users/absences/'.Id::A1 => static function (string $m, string $u, array $o): MockResponse {
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('{"endDate":"2026-10-11T22:00:00.000Z","type":"Unplanned"}', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('absence'));
         }]);
 
-        $absence = $client->users()->updateAbsence('a1', new AbsenceChanges(endDate: new \DateTimeImmutable('2026-10-11T22:00:00Z'), type: AbsenceType::UNPLANNED));
+        $absence = $client->users()->updateAbsence(Id::A1, new AbsenceChanges(endDate: new \DateTimeImmutable('2026-10-11T22:00:00Z'), type: AbsenceType::UNPLANNED));
 
         self::assertInstanceOf(Absence::class, $absence);
     }
@@ -292,19 +303,20 @@ final class UsersWriteTest extends TestCase
     public function testUpdateAbsenceWithEmptyChangesIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        MockFactro::client([])->users()->updateAbsence('a1', new AbsenceChanges());
+        MockFactro::client([])->users()->updateAbsence(Id::A1, new AbsenceChanges());
     }
 
     public function testUpdateAbsencesPutsListWithIds(): void
     {
         $client = MockFactro::client(['PUT /users/absences' => static function (string $m, string $u, array $o): MockResponse {
-            self::assertJsonStringEqualsJsonString('[{"id":"a1","type":"Planned"},{"id":"a2","startDate":"2026-09-01T00:00:00.000Z"}]', (string) $o['body']);
+            self::assertIsString($o['body']);
+            self::assertJsonStringEqualsJsonString('[{"id":"'.Id::A1.'","type":"Planned"},{"id":"a2","startDate":"2026-09-01T00:00:00.000Z"}]', $o['body']);
 
             return JsonMockResponse::fromFile(Fixtures::path('absences'));
         }]);
 
         $absences = $client->users()->updateAbsences([
-            'a1' => new AbsenceChanges(type: AbsenceType::PLANNED),
+            Id::A1 => new AbsenceChanges(type: AbsenceType::PLANNED),
             'a2' => new AbsenceChanges(startDate: new \DateTimeImmutable('2026-09-01T00:00:00Z')),
         ]);
 
@@ -319,21 +331,15 @@ final class UsersWriteTest extends TestCase
 
     public function testDeleteAbsenceAccepts204(): void
     {
-        $client = MockFactro::client(['DELETE /users/absences/a1' => new MockResponse('', ['http_code' => 204])]);
+        $client = MockFactro::client(['DELETE /users/absences/'.Id::A1 => new MockResponse('', ['http_code' => 204])]);
 
-        $client->users()->deleteAbsence('a1');
+        $client->users()->deleteAbsence(Id::A1);
         $this->addToAssertionCount(1);
     }
 
-    public function testIdsAreEncodedInPaths(): void
+    public function testNonUuidIdsAreRejectedBeforeSending(): void
     {
-        $client = MockFactro::client([
-            'DELETE /users/a%2Fb' => new MockResponse('', ['http_code' => 204]),
-            'DELETE /users/absences/x%2Fy' => new MockResponse('', ['http_code' => 204]),
-        ]);
-
-        $client->users()->delete('a/b');
-        $client->users()->deleteAbsence('x/y');
-        $this->addToAssertionCount(1);
+        $this->expectException(\InvalidArgumentException::class);
+        MockFactro::client([])->users()->deleteAbsence('x/y');
     }
 }

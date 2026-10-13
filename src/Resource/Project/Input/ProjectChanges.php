@@ -10,12 +10,21 @@ use Nxi\Factro\Resource\Project\ProjectState;
 use Nxi\Factro\Time\CalendarDate;
 
 /**
- * Partial update for PUT /projects/{id}. Only non-null fields are sent.
+ * Partial update for PUT /projects/{id}. Only non-null fields are sent; fields named in $clear are sent as explicit
+ * null, which empties them in factro. Tested live: colorScheme accepts null.
  */
 final readonly class ProjectChanges
 {
     /**
+     * Payload keys that factro accepts as null, verified against the live API.
+     *
+     * @var list<string>
+     */
+    public const array CLEARABLE = ['colorScheme'];
+
+    /**
      * @param array<string, mixed>|null $customFields
+     * @param list<string>              $clear        payload keys from CLEARABLE to send as null
      */
     public function __construct(
         public ?string $title = null,
@@ -29,15 +38,19 @@ final readonly class ProjectChanges
         public ?ProjectState $projectState = null,
         public ?CalendarDate $plannedStartDate = null,
         public ?CalendarDate $plannedEndDate = null,
+        public array $clear = [],
     ) {
+        Payload::assertClearable($this, $clear, self::CLEARABLE);
     }
 
     /**
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array<string, mixed>
      */
     public function toPayload(\DateTimeZone $timezone): array
     {
-        return Payload::withoutNulls([
+        return Payload::withoutNullsExcept([
             'title' => $this->title,
             'description' => $this->description,
             'colorScheme' => $this->colorScheme,
@@ -49,7 +62,7 @@ final readonly class ProjectChanges
             'projectState' => $this->projectState?->value,
             'plannedStartDate' => $this->plannedStartDate?->toFactro($timezone),
             'plannedEndDate' => $this->plannedEndDate?->toFactro($timezone),
-        ]);
+        ], $this->clear);
     }
 
     public function isEmpty(): bool

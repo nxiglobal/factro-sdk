@@ -8,6 +8,7 @@ use Nxi\Factro\Resource\Project\Input\NewProjectComment;
 use Nxi\Factro\Resource\Project\Output\ProjectComment;
 use Nxi\Factro\Resource\Project\Projects;
 use Nxi\Factro\Testing\Fixtures;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -22,15 +23,15 @@ final class ProjectsCommentsTest extends TestCase
         $first = Fixtures::json('project-comments')[0];
         self::assertIsArray($first);
         $client = MockFactro::client([
-            'GET /projects/p1/comments' => JsonMockResponse::fromFile(Fixtures::path('project-comments')),
-            'GET /projects/p1/comments/c%2F1' => new JsonMockResponse($first),
+            'GET /projects/'.Id::P1.'/comments' => JsonMockResponse::fromFile(Fixtures::path('project-comments')),
+            'GET /projects/'.Id::P1.'/comments/'.Id::C1 => new JsonMockResponse($first),
         ]);
 
-        $comments = $client->projects()->comments('p1');
+        $comments = $client->projects()->comments(Id::P1);
         self::assertCount(2, $comments);
         self::assertContainsOnlyInstancesOf(ProjectComment::class, $comments);
 
-        $comment = $client->projects()->comment('p1', 'c/1');
+        $comment = $client->projects()->comment(Id::P1, Id::C1);
         self::assertSame($first['id'], $comment->id);
     }
 
@@ -38,14 +39,14 @@ final class ProjectsCommentsTest extends TestCase
     {
         $first = Fixtures::json('project-comments')[0];
         self::assertIsArray($first);
-        $client = MockFactro::client(['POST /projects/p1/comments' => static function (string $m, string $u, array $o) use ($first): MockResponse {
+        $client = MockFactro::client(['POST /projects/'.Id::P1.'/comments' => static function (string $m, string $u, array $o) use ($first): MockResponse {
             self::assertIsString($o['body']);
             self::assertJsonStringEqualsJsonString('{"text":"<p>Hi</p>","parentCommentId":"c0"}', $o['body']);
 
             return new JsonMockResponse($first);
         }]);
 
-        $added = $client->projects()->addComment('p1', new NewProjectComment('<p>Hi</p>', 'c0'));
+        $added = $client->projects()->addComment(Id::P1, new NewProjectComment('<p>Hi</p>', 'c0'));
 
         self::assertSame($first['id'], $added->id);
     }
@@ -54,9 +55,9 @@ final class ProjectsCommentsTest extends TestCase
     {
         $first = Fixtures::json('project-comments')[0];
         self::assertIsArray($first);
-        $client = MockFactro::client(['DELETE /projects/p1/comments/c1' => new JsonMockResponse($first)]);
+        $client = MockFactro::client(['DELETE /projects/'.Id::P1.'/comments/'.Id::C1 => new JsonMockResponse($first)]);
 
-        $client->projects()->deleteComment('p1', 'c1');
+        $client->projects()->deleteComment(Id::P1, Id::C1);
         $this->addToAssertionCount(1);
     }
 }

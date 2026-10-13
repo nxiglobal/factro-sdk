@@ -8,6 +8,7 @@ use Nxi\Factro\Exception\HydrationException;
 use Nxi\Factro\FactroOptions;
 use Nxi\Factro\Http\Transport;
 use Nxi\Factro\Resource\AbstractResource;
+use Nxi\Factro\Resource\AccessRight\Output\AccessRightReason;
 use Nxi\Factro\Resource\AccessRight\Output\EmployeeAccessRight;
 use Nxi\Factro\Resource\AccessRight\Output\TeamAccessRight;
 
@@ -39,7 +40,7 @@ final class AccessRights extends AbstractResource
     /**
      * GET .../read_rights: employee ids mapped to the reasons why each employee may read the reference.
      *
-     * @return array<string, list<string>>
+     * @return array<string, list<AccessRightReason>>
      */
     public function readRights(): array
     {
@@ -49,7 +50,7 @@ final class AccessRights extends AbstractResource
     /**
      * GET .../write_rights: employee ids mapped to the reasons why each employee may edit the reference.
      *
-     * @return array<string, list<string>>
+     * @return array<string, list<AccessRightReason>>
      */
     public function writeRights(): array
     {
@@ -69,7 +70,7 @@ final class AccessRights extends AbstractResource
      */
     public function revokeRead(string $employeeId): void
     {
-        $this->transport->request('DELETE', $this->employeePath.'/read_rights/'.rawurlencode($employeeId));
+        $this->transport->request('DELETE', $this->employeePath.'/read_rights/'.self::id($employeeId));
     }
 
     /**
@@ -87,7 +88,7 @@ final class AccessRights extends AbstractResource
      */
     public function revokeWrite(string $employeeId): void
     {
-        $this->transport->request('DELETE', $this->employeePath.'/write_rights/'.rawurlencode($employeeId));
+        $this->transport->request('DELETE', $this->employeePath.'/write_rights/'.self::id($employeeId));
     }
 
     /**
@@ -103,7 +104,7 @@ final class AccessRights extends AbstractResource
      */
     public function revokeTeamRead(string $teamId): void
     {
-        $this->transport->request('DELETE', $this->teamPath.'/team_read_rights/'.rawurlencode($teamId));
+        $this->transport->request('DELETE', $this->teamPath.'/team_read_rights/'.self::id($teamId));
     }
 
     /**
@@ -119,32 +120,25 @@ final class AccessRights extends AbstractResource
      */
     public function revokeTeamWrite(string $teamId): void
     {
-        $this->transport->request('DELETE', $this->teamPath.'/team_write_rights/'.rawurlencode($teamId));
+        $this->transport->request('DELETE', $this->teamPath.'/team_write_rights/'.self::id($teamId));
     }
 
     /**
-     * The rights endpoints return an object whose keys are employee ids and whose values list the
-     * reasons ("officer", "directReadRights", ...) as strings. Anything else is a hydration error.
+     * The rights endpoints return an object whose keys are employee ids and whose values list
+     * IAccessRightReason objects. Anything else is a hydration error.
      *
      * @param array<mixed>|null $body
      *
-     * @return array<string, list<string>>
+     * @return array<string, list<AccessRightReason>>
      */
     private function reasons(?array $body): array
     {
         $result = [];
         foreach ($this->object($body) as $employeeId => $reasons) {
             if (!is_array($reasons)) {
-                throw new HydrationException(self::class, $employeeId, 'list<string>', $reasons);
+                throw new HydrationException(self::class, $employeeId, 'list<IAccessRightReason>', $reasons);
             }
-            $list = [];
-            foreach ($reasons as $reason) {
-                if (!is_string($reason)) {
-                    throw new HydrationException(self::class, $employeeId, 'list<string>', $reasons);
-                }
-                $list[] = $reason;
-            }
-            $result[$employeeId] = $list;
+            $result[$employeeId] = array_map(AccessRightReason::fromArray(...), $this->rows($reasons));
         }
 
         return $result;

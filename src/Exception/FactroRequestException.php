@@ -7,9 +7,10 @@ namespace Nxi\Factro\Exception;
 use Nxi\Factro\Http\ErrorMapper;
 
 /**
- * factro answered with an HTTP status of 400 or higher.
+ * factro answered with an HTTP status of 400 or higher, or with a body the SDK cannot decode.
  *
- * Subclasses exist for the well-known statuses; this class itself is thrown for every other status.
+ * Subclasses exist for the well-known statuses and for UnexpectedResponseException; this class itself
+ * is thrown for every other status of 400 or higher.
  */
 class FactroRequestException extends \RuntimeException implements FactroException
 {

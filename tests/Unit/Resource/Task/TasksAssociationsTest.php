@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nxi\Factro\Tests\Unit\Resource\Task;
 
 use Nxi\Factro\Resource\Task\Tasks;
+use Nxi\Factro\Tests\Support\Id;
 use Nxi\Factro\Tests\Support\MockFactro;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -28,81 +29,81 @@ final class TasksAssociationsTest extends TestCase
 
     public function testRemoveConnection(): void
     {
-        $client = MockFactro::client(['DELETE /tasks/t1/task_connections/t2' => new MockResponse('', ['http_code' => 204])]);
+        $client = MockFactro::client(['DELETE /tasks/'.Id::T1.'/task_connections/'.Id::T2 => new MockResponse('', ['http_code' => 204])]);
 
-        $client->tasks()->removeConnection('t1', 't2');
+        $client->tasks()->removeConnection(Id::T1, Id::T2);
         $this->addToAssertionCount(1);
     }
 
     public function testMoveToProjectOmitsPositionWhenNull(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1/project' => $this->expectingBody('{"projectId":"p1"}')]);
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1.'/project' => $this->expectingBody('{"projectId":"'.Id::P1.'"}')]);
 
-        $client->tasks()->moveToProject('t1', 'p1');
+        $client->tasks()->moveToProject(Id::T1, Id::P1);
         $this->addToAssertionCount(1);
     }
 
     public function testMoveToProjectWithPosition(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1/project' => $this->expectingBody('{"projectId":"p1","position":3}')]);
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1.'/project' => $this->expectingBody('{"projectId":"'.Id::P1.'","position":3}')]);
 
-        $client->tasks()->moveToProject('t1', 'p1', 3);
+        $client->tasks()->moveToProject(Id::T1, Id::P1, 3);
         $this->addToAssertionCount(1);
     }
 
     public function testRemoveFromProject(): void
     {
-        $client = MockFactro::client(['DELETE /tasks/t1/project' => new MockResponse('', ['http_code' => 204])]);
+        $client = MockFactro::client(['DELETE /tasks/'.Id::T1.'/project' => new MockResponse('', ['http_code' => 204])]);
 
-        $client->tasks()->removeFromProject('t1');
+        $client->tasks()->removeFromProject(Id::T1);
         $this->addToAssertionCount(1);
     }
 
     public function testMoveToPackageOmitsPositionWhenNull(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1/package' => $this->expectingBody('{"packageId":"pk1"}')]);
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1.'/package' => $this->expectingBody('{"packageId":"'.Id::PK1.'"}')]);
 
-        $client->tasks()->moveToPackage('t1', 'pk1');
+        $client->tasks()->moveToPackage(Id::T1, Id::PK1);
         $this->addToAssertionCount(1);
     }
 
     public function testMoveToPackageWithPosition(): void
     {
-        $client = MockFactro::client(['PUT /tasks/t1/package' => $this->expectingBody('{"packageId":"pk1","position":0}')]);
+        $client = MockFactro::client(['PUT /tasks/'.Id::T1.'/package' => $this->expectingBody('{"packageId":"'.Id::PK1.'","position":0}')]);
 
-        $client->tasks()->moveToPackage('t1', 'pk1', 0);
+        $client->tasks()->moveToPackage(Id::T1, Id::PK1, 0);
         $this->addToAssertionCount(1);
     }
 
     public function testRemoveFromPackage(): void
     {
-        $client = MockFactro::client(['DELETE /tasks/t1/package' => new MockResponse('', ['http_code' => 204])]);
+        $client = MockFactro::client(['DELETE /tasks/'.Id::T1.'/package' => new MockResponse('', ['http_code' => 204])]);
 
-        $client->tasks()->removeFromPackage('t1');
+        $client->tasks()->removeFromPackage(Id::T1);
         $this->addToAssertionCount(1);
     }
 
     public function testSetAndRemoveCompany(): void
     {
         $client = MockFactro::client([
-            'PUT /tasks/t1/company' => $this->expectingBody('{"companyId":"c1"}'),
-            'DELETE /tasks/t1/company' => new MockResponse('', ['http_code' => 204]),
+            'PUT /tasks/'.Id::T1.'/company' => $this->expectingBody('{"companyId":"'.Id::C1.'"}'),
+            'DELETE /tasks/'.Id::T1.'/company' => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        $client->tasks()->setCompany('t1', 'c1');
-        $client->tasks()->removeCompany('t1');
+        $client->tasks()->setCompany(Id::T1, Id::C1);
+        $client->tasks()->removeCompany(Id::T1);
         $this->addToAssertionCount(2);
     }
 
     public function testSetAndRemoveContact(): void
     {
         $client = MockFactro::client([
-            'PUT /tasks/t1/contact' => $this->expectingBody('{"contactId":"k1"}'),
-            'DELETE /tasks/t1/contact' => new MockResponse('', ['http_code' => 204]),
+            'PUT /tasks/'.Id::T1.'/contact' => $this->expectingBody('{"contactId":"'.Id::K1.'"}'),
+            'DELETE /tasks/'.Id::T1.'/contact' => new MockResponse('', ['http_code' => 204]),
         ]);
 
-        $client->tasks()->setContact('t1', 'k1');
-        $client->tasks()->removeContact('t1');
+        $client->tasks()->setContact(Id::T1, Id::K1);
+        $client->tasks()->removeContact(Id::T1);
         $this->addToAssertionCount(2);
     }
 }

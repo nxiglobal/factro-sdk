@@ -6,15 +6,19 @@ namespace Nxi\Factro\Exception;
 
 /**
  * A response field is missing or has an unexpected type.
+ * actualType is get_debug_type() of the received value, safe to log without the value itself.
  */
 final class HydrationException extends \UnexpectedValueException implements FactroException
 {
+    public readonly string $actualType;
+
     public function __construct(
         public readonly string $owner,
         public readonly string $field,
         public readonly string $expected,
         mixed $actual,
     ) {
+        $this->actualType = get_debug_type($actual);
         parent::__construct(sprintf(
             'Cannot hydrate %s::$%s: expected %s, got %s.',
             $owner,

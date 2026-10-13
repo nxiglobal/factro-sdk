@@ -64,16 +64,38 @@ final class FieldTest extends TestCase
         $this->assertHydrationError(static fn () => Field::int(['k' => '3'], 'k', self::OWNER), 'expected int, got string "3"');
     }
 
-    public function testEnumRejectsUnknownValue(): void
+    public function testIntRejectsFloatsOutsideTheIntRange(): void
     {
-        self::assertSame(TaskState::CLOSED, Field::enum(['k' => 'closed'], 'k', self::OWNER, TaskState::class));
-        self::assertSame(TaskPriority::PRIORITY_10, Field::nullableEnum(['k' => 10], 'k', self::OWNER, TaskPriority::class));
-        self::assertNull(Field::nullableEnum(['k' => null], 'k', self::OWNER, TaskPriority::class));
-        self::assertNull(Field::nullableEnum([], 'k', self::OWNER, TaskPriority::class));
-        $this->assertHydrationError(static fn () => Field::enum(['k' => 'archived'], 'k', self::OWNER, TaskState::class), 'expected TaskState, got string "archived"');
-        $this->assertHydrationError(static fn () => Field::enum([], 'k', self::OWNER, TaskState::class), 'expected TaskState, got null');
-        $this->assertHydrationError(static fn () => Field::nullableEnum(['k' => true], 'k', self::OWNER, TaskState::class), 'expected ?TaskState, got bool true');
-        $this->assertHydrationError(static fn () => Field::enum(['k' => 15], 'k', self::OWNER, TaskPriority::class), 'expected TaskPriority, got int 15');
+        foreach ([json_decode('1e400'), json_decode('-1e400'), 1e19, 9.3e18, NAN] as $value) {
+            try {
+                Field::int(['k' => $value], 'k', self::OWNER);
+                self::fail(sprintf('expected HydrationException for %s', var_export($value, true)));
+            } catch (HydrationException $e) {
+                self::assertSame('k', $e->field);
+            }
+        }
+        self::assertSame(PHP_INT_MIN, Field::int(['k' => (float) PHP_INT_MIN], 'k', self::OWNER));
+    }
+
+    public function testEnumOrNullMapsUnknownValuesToNull(): void
+    {
+        self::assertSame(TaskState::CLOSED, Field::enumOrNull(['k' => 'closed'], 'k', self::OWNER, TaskState::class));
+        self::assertSame(TaskPriority::PRIORITY_10, Field::enumOrNull(['k' => 10], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull(['k' => null], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull([], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull(['k' => 'archived'], 'k', self::OWNER, TaskState::class));
+        self::assertNull(Field::enumOrNull(['k' => 15], 'k', self::OWNER, TaskPriority::class));
+        self::assertNull(Field::enumOrNull(['k' => 'high'], 'k', self::OWNER, TaskPriority::class));
+        $this->assertHydrationError(static fn () => Field::enumOrNull(['k' => true], 'k', self::OWNER, TaskState::class), 'expected ?TaskState, got bool true');
+    }
+
+    public function testEnumValueKeepsTheRawValue(): void
+    {
+        self::assertSame('archived', Field::enumValue(['k' => 'archived'], 'k', self::OWNER));
+        self::assertSame(15, Field::enumValue(['k' => 15], 'k', self::OWNER));
+        self::assertNull(Field::nullableEnumValue([], 'k', self::OWNER));
+        $this->assertHydrationError(static fn () => Field::enumValue([], 'k', self::OWNER), 'expected int|string, got null');
+        $this->assertHydrationError(static fn () => Field::nullableEnumValue(['k' => 1.5], 'k', self::OWNER), 'expected ?int|string, got float 1.5');
     }
 
     public function testDateHelpers(): void
@@ -88,6 +110,9 @@ final class FieldTest extends TestCase
         self::assertNull(Field::nullableYmd([], 'k', self::OWNER));
         $this->assertHydrationError(static fn () => Field::isoUtc(['k' => '2026-08-31'], 'k', self::OWNER), 'expected ISO-8601 UTC timestamp, got string "2026-08-31"');
         $this->assertHydrationError(static fn () => Field::isoUtc([], 'k', self::OWNER), 'expected ISO-8601 UTC timestamp, got null');
+        foreach (['2026-02-31T00:00:00Z', '2026-01-01T25:99:00Z', '2026-01-01T24:00:00Z'] as $impossible) {
+            $this->assertHydrationError(static fn () => Field::nullableIsoUtc(['k' => $impossible], 'k', self::OWNER), sprintf('expected ISO-8601 UTC timestamp, got string "%s"', $impossible));
+        }
         $this->assertHydrationError(static fn () => Field::jsTimestamp(['k' => '1756713600000'], 'k', self::OWNER), 'expected JavaScript timestamp, got string "1756713600000"');
         $this->assertHydrationError(static fn () => Field::ymd(['k' => '2026-02-30'], 'k', self::OWNER), 'expected Y-m-d date, got string "2026-02-30"');
     }
@@ -106,6 +131,16 @@ final class FieldTest extends TestCase
         self::assertSame(['1', '2'], $hydrated);
         self::assertSame([], Field::objectList([], 'k', self::OWNER, static fn (array $row): mixed => $row));
         $this->assertHydrationError(static fn () => Field::objectList(['k' => ['x']], 'k', self::OWNER, static fn (array $row): mixed => $row), 'expected list<array>, got array');
+    }
+
+    public function testHydrationErrorCarriesActualType(): void
+    {
+        try {
+            Field::string(['k' => null], 'k', self::OWNER);
+            self::fail('expected HydrationException');
+        } catch (HydrationException $e) {
+            self::assertSame('null', $e->actualType);
+        }
     }
 
     private function assertHydrationError(\Closure $call, string $expectedSuffix): void

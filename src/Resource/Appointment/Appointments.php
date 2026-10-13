@@ -27,7 +27,7 @@ final class Appointments extends AbstractResource
      */
     public function get(string $appointmentId): Appointment
     {
-        return Appointment::fromArray($this->object($this->transport->request('GET', '/appointments/'.rawurlencode($appointmentId))));
+        return Appointment::fromArray($this->object($this->transport->request('GET', '/appointments/'.self::id($appointmentId))));
     }
 
     /**
@@ -59,7 +59,7 @@ final class Appointments extends AbstractResource
             throw new \InvalidArgumentException('AppointmentChanges must set at least one field.');
         }
 
-        return Appointment::fromArray($this->object($this->transport->request('PUT', '/appointments/'.rawurlencode($appointmentId), json: $changes->toPayload())));
+        return Appointment::fromArray($this->object($this->transport->request('PUT', '/appointments/'.self::id($appointmentId), json: $changes->toPayload())));
     }
 
     /**
@@ -67,7 +67,7 @@ final class Appointments extends AbstractResource
      */
     public function delete(string $appointmentId): void
     {
-        $this->transport->request('DELETE', '/appointments/'.rawurlencode($appointmentId));
+        $this->transport->request('DELETE', '/appointments/'.self::id($appointmentId));
     }
 
     /**
@@ -90,21 +90,21 @@ final class Appointments extends AbstractResource
     /**
      * PUT /appointments/appointments. Keys are appointment ids; each payload carries its id.
      *
-     * @param array<string, AppointmentChanges> $changesById
+     * @param array<string, AppointmentChanges> $changes
      *
      * @return list<Appointment>
      */
-    public function updateMany(array $changesById): array
+    public function updateMany(array $changes): array
     {
-        if ([] === $changesById) {
+        if ([] === $changes) {
             throw new \InvalidArgumentException('updateMany() needs at least one AppointmentChanges.');
         }
         $payload = [];
-        foreach ($changesById as $appointmentId => $changes) {
-            if ($changes->isEmpty()) {
+        foreach ($changes as $appointmentId => $appointmentChanges) {
+            if ($appointmentChanges->isEmpty()) {
                 throw new \InvalidArgumentException(sprintf('AppointmentChanges for "%s" must set at least one field.', $appointmentId));
             }
-            $payload[] = ['id' => $appointmentId] + $changes->toPayload();
+            $payload[] = ['id' => $appointmentId] + $appointmentChanges->toPayload();
         }
 
         return array_map(Appointment::fromArray(...), $this->rows($this->transport->request('PUT', '/appointments/appointments', json: $payload)));

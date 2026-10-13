@@ -11,12 +11,21 @@ use Nxi\Factro\Time\CalendarDate;
 
 /**
  * Partial update for PUT /tasks/{id}. Only non-null fields are sent; factro treats PUT as a partial update.
- * Clearing a field is not supported, because it is undocumented whether factro accepts null for one.
+ * Fields named in $clear are sent as explicit null, which empties them in factro. Tested live on 2026-10-02:
+ * executorId and colorScheme accept null, officerId: null is refused with 403.
  */
 final readonly class TaskChanges
 {
     /**
+     * Payload keys that factro accepts as null, verified against the live API.
+     *
+     * @var list<string>
+     */
+    public const array CLEARABLE = ['executorId', 'colorScheme'];
+
+    /**
      * @param array<string, mixed>|null $customFields
+     * @param list<string>              $clear        payload keys from CLEARABLE to send as null
      */
     public function __construct(
         public ?string $title = null,
@@ -35,15 +44,19 @@ final readonly class TaskChanges
         public ?string $companyId = null,
         public ?string $companyContactId = null,
         public ?Urgency $urgency = null,
+        public array $clear = [],
     ) {
+        Payload::assertClearable($this, $clear, self::CLEARABLE);
     }
 
     /**
+     * @internal builds the request body; the format follows the factro API and may change in minor releases
+     *
      * @return array<string, mixed>
      */
     public function toPayload(\DateTimeZone $timezone): array
     {
-        return Payload::withoutNulls([
+        return Payload::withoutNullsExcept([
             'title' => $this->title,
             'description' => $this->description,
             'startDate' => $this->startDate?->toFactro($timezone),
@@ -60,7 +73,7 @@ final readonly class TaskChanges
             'companyId' => $this->companyId,
             'companyContactId' => $this->companyContactId,
             'urgency' => $this->urgency?->value,
-        ]);
+        ], $this->clear);
     }
 
     public function isEmpty(): bool

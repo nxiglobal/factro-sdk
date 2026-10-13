@@ -20,6 +20,17 @@ final class HydrationExceptionTest extends TestCase
         self::assertSame(Task::class, $e->owner);
         self::assertSame('taskState', $e->field);
         self::assertSame('TaskState', $e->expected);
+        self::assertSame('string', $e->actualType);
+    }
+
+    public function testActualType(): void
+    {
+        self::assertSame('null', new HydrationException('O', 'f', 'string', null)->actualType);
+        self::assertSame('int', new HydrationException('O', 'f', 'string', 1)->actualType);
+        self::assertSame('float', new HydrationException('O', 'f', 'int', 3.5)->actualType);
+        self::assertSame('bool', new HydrationException('O', 'f', 'string', true)->actualType);
+        self::assertSame('array', new HydrationException('O', 'f', 'string', ['a'])->actualType);
+        self::assertSame('stdClass', new HydrationException('O', 'f', 'string', new \stdClass())->actualType);
     }
 
     public function testActualValueFormatting(): void

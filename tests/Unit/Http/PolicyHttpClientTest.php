@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nxi\Factro\Tests\Unit\Http;
 
+use Nxi\Factro\Exception\OperationNotPermittedException;
 use Nxi\Factro\Http\PolicyHttpClient;
-use Nxi\Factro\Policy\OperationNotPermittedException;
 use Nxi\Factro\Policy\RequestPolicy;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
