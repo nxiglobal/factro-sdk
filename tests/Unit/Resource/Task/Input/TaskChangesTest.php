@@ -53,6 +53,20 @@ final class TaskChangesTest extends TestCase
         self::assertFalse(new TaskChanges(clear: ['colorScheme'])->isEmpty());
     }
 
+    public function testClearedDatesAreSentAsNull(): void
+    {
+        $changes = new TaskChanges(clear: ['startDate', 'endDate']);
+
+        self::assertSame(['startDate' => null, 'endDate' => null], $changes->toPayload(new \DateTimeZone('UTC')));
+    }
+
+    public function testADateSetAndClearedAtOnceIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new TaskChanges(startDate: CalendarDate::fromYmd('2026-09-01'), clear: ['startDate']);
+    }
+
     /**
      * @param list<string> $clear
      */

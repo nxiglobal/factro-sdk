@@ -13,6 +13,7 @@ use Nxi\Factro\Time\CalendarDate;
  * Partial update for PUT /tasks/{id}. Only non-null fields are sent; factro treats PUT as a partial update.
  * Fields named in $clear are sent as explicit null, which empties them in factro. Tested live on 2026-10-02:
  * executorId and colorScheme accept null, officerId: null is refused with 403.
+ * Tested live on 2026-11-03: startDate and endDate accept null, alone or together, on tasks and milestones.
  */
 final readonly class TaskChanges
 {
@@ -21,7 +22,7 @@ final readonly class TaskChanges
      *
      * @var list<string>
      */
-    public const array CLEARABLE = ['executorId', 'colorScheme'];
+    public const array CLEARABLE = ['executorId', 'colorScheme', 'startDate', 'endDate'];
 
     /**
      * @param array<string, mixed>|null $customFields
